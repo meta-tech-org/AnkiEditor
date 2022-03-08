@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,8 @@ namespace AnkiEditor.Model
         public string bfont { get; set; }
         public string bqfmt { get; set; }
         public int bsize { get; set; }
-        public object did { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        public object did { get; set; } 
         public string name { get; set; }
         public int ord { get; set; }
         public string qfmt { get; set; }
