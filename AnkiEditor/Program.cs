@@ -9,14 +9,13 @@ namespace AnkiEditor
     {
         static void Main(string[] args)
         {
+            string deckPath = @"C:\Users\juliu_6las01j\Documents\Anki Exports\Japanisch,_bitte!_Neu\deck.json";
+
             // Import
-            Deck root = JsonConvert.DeserializeObject<Deck>(File.ReadAllText(@"C:\Users\juliu_6las01j\Documents\Anki Exports\Japanisch,_bitte!_Neu\deck.json"));
+            Deck root = JsonConvert.DeserializeObject<Deck>(File.ReadAllText(deckPath));
 
             // Export
-            File.WriteAllText(@"C:\Users\juliu_6las01j\Documents\Anki Exports\Japanisch,_bitte!_Neu\deck.json", JsonConvert.SerializeObject(root, new JsonSerializerSettings
-            {
-                Formatting = Formatting.Indented,
-            }).Replace("  ","    "));
+            File.WriteAllText(deckPath, JsonConvert.SerializeObject(root, Formatting.Indented).Replace("  ","    "));
         }
     }
 }
