@@ -18,7 +18,7 @@ namespace AnkiEditor.Model
         public int extendNew { get; set; }
         public int extendRev { get; set; }
         public List<string> media_files { get; set; }
-        public long mid { get; set; }
+        public long? mid { get; set; }
         public string name { get; set; }
         public List<NoteModel> note_models { get; set; }
         public List<Note> notes { get; set; }
