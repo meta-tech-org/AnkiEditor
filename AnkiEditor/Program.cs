@@ -22,7 +22,13 @@ namespace AnkiEditor
                     {
                         continue;
                     }
-                    letter.children.Add(CreateEmptyDeck("01 Kana", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
+                    //TODO: move file list from parent deck to new child if applicable
+                    //TODO: Check if there are any decks with note models or so
+                    var kana = letter.notes.Where(n => n.note_model_uuid == "24bae622-7ab1-11ec-8f92-0c7a15ee466f" || n.note_model_uuid == "24bd090b-7ab1-11ec-99a2-0c7a15ee466f");
+                    var kanaDeck = CreateEmptyDeck("01 Kana", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f");
+                    letter.notes = letter.notes.Except(kana).ToList();
+                    kanaDeck.notes.AddRange(kana);
+                    letter.children.Add(kanaDeck);
                     letter.children.Add(CreateEmptyDeck("02 Vokabeln", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
                     letter.children.Add(CreateEmptyDeck("03 Grammatik", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
                     letter.children.Add(CreateEmptyDeck("04 Sätze und Phrasen", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
