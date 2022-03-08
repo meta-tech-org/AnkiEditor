@@ -15,7 +15,7 @@ namespace AnkiEditor.Model
         public List<string> tags { get; set; }
         public override string ToString()
         {
-            return $"Note {fields.ElementAtOrDefault(0)}, guid: {guid}, tags: {tags.Count}";
+            return $"Note {fields.ElementAtOrDefault(0)}, Typ: {note_model_uuid}, Tags: {tags.Count}";
         }
     }
 }
