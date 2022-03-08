@@ -15,12 +15,17 @@ namespace AnkiEditor
             Deck root = JsonConvert.DeserializeObject<Deck>(File.ReadAllText(deckPath));
 
             // Export
-            string[] lines = JsonConvert.SerializeObject(root, Formatting.Indented).Split("\r\n");
-            for(int i = 0; i < lines.Length; i++)
+            string[] lines = JsonConvert.SerializeObject(root, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Ignore,
+                
+            }).Split("\r\n");
+            for (int i = 0; i < lines.Length; i++)
             {
                 var lineSpaces = 0;
                 var lineParts = lines[i].Split(" ");
-                foreach(var linePart in lineParts)
+                foreach (var linePart in lineParts)
                 {
                     if (linePart == "")
                     {
@@ -33,7 +38,8 @@ namespace AnkiEditor
                 }
                 lines[i] = lines[i].PadLeft(lines[i].Length + lineSpaces, ' ');
             }
-            File.WriteAllText(deckPath, JsonConvert.SerializeObject(root, Formatting.Indented).Replace("  ","    "));
+            string resultString = string.Join("\r\n", lines);
+            File.WriteAllText(deckPath, resultString);
         }
     }
 }
