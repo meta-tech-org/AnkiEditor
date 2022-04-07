@@ -23,6 +23,15 @@ namespace AnkiEditor.Model
         public List<NoteModel> note_models { get; set; }
         public List<Note> notes { get; set; }
 
+        public Deck GetSubDeckByTitle(string title)
+        {
+            return children?.FirstOrDefault(d => d.name == title);
+        }
+        public DeckConfiguration GetDeckConfigurationByTitle(string title)
+        {
+            return deck_configurations?.FirstOrDefault(d => d.name == title);
+        }
+
         public override string ToString()
         {
             return $"Deck {name}, children: {children.Count}, notes: {notes.Count}";
