@@ -37,6 +37,26 @@ namespace AnkiEditor.Model
         {
             return deck_configurations?.FirstOrDefault(d => d.name == title);
         }
+        public static Deck CreateEmptyDeck(string name, string configId)
+        {
+            return new Deck
+            {
+                children = new List<Deck>(),
+                crowdanki_uuid = Guid.NewGuid().ToString().ToLower(),
+                deck_configurations = null,
+                deck_config_uuid = configId,
+                desc = "",
+                dyn = 0,
+                extendNew = 0,
+                extendRev = 0,
+                media_files = new List<string>(),
+                mid = null,
+                name = name,
+                notes = new List<Note>(),
+                note_models = null,
+                __type__ = "Deck"
+            };
+        }
 
         public override string ToString()
         {
