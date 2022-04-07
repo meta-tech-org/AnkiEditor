@@ -25,5 +25,9 @@ namespace AnkiEditor.Model
         public Rev rev { get; set; }
         public int reviewOrder { get; set; }
         public int timer { get; set; }
+        public override string ToString()
+        {
+            return $"{name} - {crowdanki_uuid} [{@new.perDay}, {@rev.perDay}]";
+        }
     }
 }
