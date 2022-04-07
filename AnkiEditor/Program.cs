@@ -24,15 +24,11 @@ namespace AnkiEditor
             {
                 foreach (var chapter in level.children)
                 {
-                    chapter.deck_config_uuid = chapterConfig.crowdanki_uuid;
-                    var vocabDeck = chapter.GetSubDeckByTitle("01 Vokabeln");
-                    vocabDeck.deck_config_uuid = vocabConfig.crowdanki_uuid;
-                    var grammarDeck = chapter.GetSubDeckByTitle("02 Grammatik");
-                    grammarDeck.deck_config_uuid = grammarConfig.crowdanki_uuid;
-                    var sentencesDeck = chapter.GetSubDeckByTitle("03 Sätze und Phrasen");
-                    sentencesDeck.deck_config_uuid = sentencesConfig.crowdanki_uuid;
-                    var taskDeck = chapter.GetSubDeckByTitle("04 Aufgaben");
-                    taskDeck.deck_config_uuid = taskConfig.crowdanki_uuid;
+                    chapter.SetDeckConfiguration(chapterConfig);
+                    chapter.GetSubDeckByTitle("01 Vokabeln").SetDeckConfiguration(vocabConfig);
+                    chapter.GetSubDeckByTitle("02 Grammatik").SetDeckConfiguration(grammarConfig);
+                    chapter.GetSubDeckByTitle("03 Sätze und Phrasen").SetDeckConfiguration(sentencesConfig);
+                    chapter.GetSubDeckByTitle("04 Aufgaben").SetDeckConfiguration(taskConfig);
                     //foreach (var letter in chapter.children)
                     //{
                     //    if (letter.children.Count > 0)
