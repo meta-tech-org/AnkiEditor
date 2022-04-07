@@ -19,5 +19,6 @@ namespace AnkiEditor.Model
         public string name { get; set; }
         public int ord { get; set; }
         public string qfmt { get; set; }
+        public bool? scratchPad { get; set; }
     }
 }

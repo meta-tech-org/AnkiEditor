@@ -8,6 +8,7 @@ namespace AnkiEditor.Model
 {
     public class Fld
     {
+        public string description { get; set; }
         public string font { get; set; }
         public string name { get; set; }
         public int ord { get; set; }
