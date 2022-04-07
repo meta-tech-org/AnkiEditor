@@ -25,10 +25,18 @@ namespace AnkiEditor.Model
         public List<NoteModel> note_models { get; set; }
         public List<Note> notes { get; set; }
 
+        /// <summary>
+        /// Sets the deck config (study options) for the current deck.
+        /// </summary>
+        /// <param name="config"></param>
         public void SetDeckConfiguration(DeckConfiguration config)
         {
             SetDeckConfiguration(config.crowdanki_uuid);
         }
+        /// <summary>
+        /// Sets the deck config (study options) for the current deck.
+        /// </summary>
+        /// <param name="deckConfigurationUUID"></param>
         public void SetDeckConfiguration(string deckConfigurationUUID)
         {
             this.deck_config_uuid = deckConfigurationUUID;
@@ -38,18 +46,23 @@ namespace AnkiEditor.Model
         {
             return children?.FirstOrDefault(d => d.name == title);
         }
+        /// <summary>
+        /// Returns an instance of the deck configuration (study options) that matches the given title.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <returns></returns>
         public DeckConfiguration GetDeckConfigurationByTitle(string title)
         {
             return deck_configurations?.FirstOrDefault(d => d.name == title);
         }
-        public static Deck CreateEmptyDeck(string name, string configId)
+        public static Deck CreateEmptyDeck(string name, string deckConfigurationUUID)
         {
             return new Deck
             {
                 children = new List<Deck>(),
                 crowdanki_uuid = Guid.NewGuid().ToString().ToLower(),
                 deck_configurations = null,
-                deck_config_uuid = configId,
+                deck_config_uuid = deckConfigurationUUID,
                 desc = "",
                 dyn = 0,
                 extendNew = 0,
