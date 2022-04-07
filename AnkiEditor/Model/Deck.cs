@@ -25,6 +25,15 @@ namespace AnkiEditor.Model
         public List<NoteModel> note_models { get; set; }
         public List<Note> notes { get; set; }
 
+        public void SetDeckConfiguration(DeckConfiguration config)
+        {
+            SetDeckConfiguration(config.crowdanki_uuid);
+        }
+        public void SetDeckConfiguration(string deckConfigurationUUID)
+        {
+            this.deck_config_uuid = deckConfigurationUUID;
+        }
+
         public Deck GetSubDeckByTitle(string title)
         {
             return children?.FirstOrDefault(d => d.name == title);
