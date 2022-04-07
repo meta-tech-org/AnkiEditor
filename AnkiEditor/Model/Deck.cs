@@ -10,10 +10,6 @@ namespace AnkiEditor.Model
 {
     public class Deck
     {
-        public static Deck LoadFromFile(string path)
-        {
-            return JsonConvert.DeserializeObject<Deck>(File.ReadAllText(path));
-        }
         public string __type__ { get; set; }
         public List<Deck> children { get; set; }
         public string crowdanki_uuid { get; set; }
@@ -63,6 +59,12 @@ namespace AnkiEditor.Model
             return $"Deck {name}, children: {children.Count}, notes: {notes.Count}";
         }
 
+        #region File Interaction
+        public static Deck LoadFromFile(string path)
+        {
+            return JsonConvert.DeserializeObject<Deck>(File.ReadAllText(path));
+        }
+
         public void WriteToFile(string path)
         {
             string[] lines = JsonConvert.SerializeObject(this, new JsonSerializerSettings
@@ -91,5 +93,7 @@ namespace AnkiEditor.Model
             string resultString = string.Join("\r\n", lines);
             File.WriteAllText(path, resultString);
         }
+
+        #endregion
     }
 }
