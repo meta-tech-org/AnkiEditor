@@ -10,7 +10,7 @@ namespace AnkiEditor.Model
     {
         public string __type__ { get; set; }
         public bool autoplay { get; set; }
-        public bool buryInterdayLearning { get; set; }
+        public bool? buryInterdayLearning { get; set; }
         public string crowdanki_uuid { get; set; }
         public bool dyn { get; set; }
         public int interdayLearningMix { get; set; }
