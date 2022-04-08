@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace AnkiEditor.Model
@@ -24,6 +25,40 @@ namespace AnkiEditor.Model
         public string name { get; set; }
         public List<NoteModel> note_models { get; set; }
         public List<Note> notes { get; set; }
+
+        public void FixMediaFiles()
+        {
+            this.media_files.Clear();
+            foreach(var subDeck in children)
+            {
+                subDeck.FixMediaFiles();
+            }
+            Regex soundRegex = new Regex(@"(?<=\[sound:).*?(?=\])");
+            Regex imgRegex = new Regex(File.ReadAllText("regex.txt"));
+            foreach(var note in notes)
+            {
+                foreach(var field in note.fields)
+                {
+                    foreach (var match in soundRegex.Matches(field))
+                    {
+                        if(this.media_files == null)
+                        {
+                            this.media_files = new List<string>();
+                        }
+                        this.media_files.Add(match.ToString());
+                    }
+                    foreach (var match in imgRegex.Matches(field))
+                    {
+                        if (this.media_files == null)
+                        {
+                            this.media_files = new List<string>();
+                        }
+                        this.media_files.Add(match.ToString());
+                    }
+                    this.media_files = this.media_files.Distinct().OrderBy(f => f).ToList();
+                }
+            }
+        }
 
         /// <summary>
         /// Sets the deck config (study options) for the current deck.
@@ -89,6 +124,7 @@ namespace AnkiEditor.Model
 
         public void WriteToFile(string path)
         {
+            FixMediaFiles();
             string[] lines = JsonConvert.SerializeObject(this, new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented, //Try to match CrowdAnki export
