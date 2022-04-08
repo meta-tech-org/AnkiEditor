@@ -21,5 +21,9 @@ namespace AnkiEditor.Model
         public List<string> tags { get; set; }
         public List<Tmpl> tmpls { get; set; }
         public int type { get; set; }
+        public override string ToString()
+        {
+            return $"{name}";
+        }
     }
 }
