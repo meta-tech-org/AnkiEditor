@@ -173,14 +173,18 @@ namespace CrowdAnkiSchema.Model
 
         public void WriteToFile(string path)
         {
+            Console.WriteLine("Fixing media files...");
             FixMediaFiles();
+            Console.WriteLine("Fixing tags...");
             FixTags();
+            Console.WriteLine("Serializing...");
             string[] lines = JsonConvert.SerializeObject(this, new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented, //Try to match CrowdAnki export
                 NullValueHandling = NullValueHandling.Ignore, //Try to match CrowdAnki export
 
             }).Split("\r\n");
+            Console.WriteLine("Cleaning...");
             for (int i = 0; i < lines.Length; i++)
             {
                 var lineSpaces = 0;
@@ -199,7 +203,9 @@ namespace CrowdAnkiSchema.Model
                 lines[i] = lines[i].PadLeft(lines[i].Length + lineSpaces, ' ');
             }
             string resultString = string.Join("\r\n", lines);
+            Console.WriteLine("Saving...");
             File.WriteAllText(path, resultString);
+            Console.WriteLine("Saved to " + path);
         }
 
         #endregion
