@@ -24,6 +24,10 @@ namespace CrowdAnkiSchema.Model
         public long? mid { get; set; }
         public string name { get; set; }
         public List<NoteModel> note_models { get; set; }
+        public NoteModel GetNoteModelByTitle(string title)
+        {
+            return note_models.First(n => n.name == title);
+        }
         public List<Note> notes { get; set; }
 
         public void FixMediaFiles()
