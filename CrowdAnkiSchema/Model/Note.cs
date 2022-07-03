@@ -10,6 +10,7 @@ namespace CrowdAnkiSchema.Model
     {
         public string __type__ { get; set; }
         public List<string> fields { get; set; }
+        [JsonIgnore]
         public string? ValueMain => fields.ElementAtOrDefault(0);
         public string guid { get; set; }
         public string note_model_uuid { get; set; }
