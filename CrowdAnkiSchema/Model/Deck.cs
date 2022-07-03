@@ -65,19 +65,20 @@ namespace CrowdAnkiSchema.Model
         public void FixMediaFiles()
         {
             this.media_files.Clear();
-            foreach(var subDeck in children)
+            foreach (var subDeck in children)
             {
                 subDeck.FixMediaFiles();
             }
             Regex soundRegex = new Regex(@"(?<=\[sound:).*?(?=\])");
             Regex imgRegex = new Regex(File.ReadAllText("regex.txt"));
             foreach(var note in notes)
+            foreach (var note in notes)
             {
-                foreach(var field in note.fields)
+                foreach (var field in note.fields)
                 {
                     foreach (var match in soundRegex.Matches(field))
                     {
-                        if(this.media_files == null)
+                        if (this.media_files == null)
                         {
                             this.media_files = new List<string>();
                         }
