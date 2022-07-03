@@ -29,6 +29,20 @@ namespace CrowdAnkiSchema.Model
             return note_models.First(n => n.name == title);
         }
         public List<Note> notes { get; set; }
+
+        public Note AddNote(string noteModelUUID, List<string> fieldValues, List<string> tags)
+        {
+            var newNote = new Note
+            {
+                note_model_uuid = noteModelUUID,
+                guid = Guid.NewGuid().ToString().Substring(0, 10),
+                __type__ = "Note",
+                tags = tags,
+                fields = fieldValues
+            };
+            notes.Add(newNote);
+            return newNote;
+        }
         /// <summary>
         /// Returns all cards that match the given note_model_uuid.
         /// </summary>
