@@ -9,6 +9,7 @@ namespace CrowdAnkiSchema.Model
     public class Note
     {
         public string __type__ { get; set; }
+        /// <summary>
         public List<string> fields { get; set; }
         [JsonIgnore]
         public string? ValueMain => fields.ElementAtOrDefault(0);
