@@ -61,13 +61,9 @@ foreach (var subDeckALevel in root.children)
                 if (conjugation.bare == StripHTML(word.ValueMain))
                 {
                     //word is verb
-                    subdeckGrammar.notes.Add(new Note
-                    {
-                        note_model_uuid = noteModelVerb.crowdanki_uuid,
-                        guid = Guid.NewGuid().ToString(),
-                        __type__ = "Note",
-                        tags = new List<string>() { "Russisch::Verb" },
-                        fields = new List<string>()
+                    var tagList = word.tags;
+                    tagList.Add("Russisch::Verb");
+                    subdeckGrammar.AddNote(noteModelVerb.crowdanki_uuid, new List<string>()
                         {
                             word.fields.ElementAt(0), //Russian
                             word.fields.ElementAt(2), //German
@@ -77,8 +73,7 @@ foreach (var subDeckALevel in root.children)
                             ToAnkiAccentation(conjugation.pl1),
                             ToAnkiAccentation(conjugation.pl2),
                             ToAnkiAccentation(conjugation.pl3),
-                        }
-                    });
+                        }, tagList);
                 }
             }
         }
@@ -98,7 +93,8 @@ static string ToOpenRussianAccentation(string input)
 static string ToAnkiAccentation(string input)
 {
     var startIndex = input.IndexOf("'");
-    if(startIndex == -1){
+    if (startIndex == -1)
+    {
         return input;
     }
     try
@@ -111,7 +107,7 @@ static string ToAnkiAccentation(string input)
     }
     catch (Exception e)
     {
-        Console.WriteLine("Couldn't insert value for " + input+" "+startIndex);
+        Console.WriteLine("Couldn't insert value for " + input + " " + startIndex);
         return null;
     }
 }
