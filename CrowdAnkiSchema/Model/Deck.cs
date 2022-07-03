@@ -29,6 +29,24 @@ namespace CrowdAnkiSchema.Model
             return note_models.First(n => n.name == title);
         }
         public List<Note> notes { get; set; }
+        /// <summary>
+        /// Returns all cards that match the given note_model_uuid.
+        /// </summary>
+        /// <param name="noteModelUuid"></param>
+        /// <returns></returns>
+        public List<Note> GetNotesByNoteModel(string noteModelUuid)
+        {
+            return notes.Where(n => n.note_model_uuid == noteModelUuid).ToList();
+        }
+        /// <summary>
+        /// Returns all cards that match the given note model
+        /// </summary>
+        /// <param name="noteModelUuid"></param>
+        /// <returns></returns>
+        public List<Note> GetNotesByNoteModel(NoteModel model)
+        {
+            return notes.Where(n => n.note_model_uuid == model.crowdanki_uuid).ToList();
+        }
 
         public void FixMediaFiles()
         {
