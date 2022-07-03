@@ -13,10 +13,4 @@
     <ProjectReference Include="..\CrowdAnkiSchema\CrowdAnkiSchema.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="regex.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
