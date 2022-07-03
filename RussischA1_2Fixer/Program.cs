@@ -1,6 +1,7 @@
 ﻿
 using CrowdAnkiSchema.Model;
 using RussischA1_2Fixer;
+using System.Text.RegularExpressions;
 
 string deckPath = @"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json";
 
@@ -42,16 +43,44 @@ foreach (var verb in conjugations)
 Deck root = Deck.LoadFromFile(deckPath);
 
 var noteModelVocab = root.GetNoteModelByTitle("Russisch::Wort");
+var noteModelVerb = root.GetNoteModelByTitle("Russisch::Verb");
 
 foreach (var subDeckALevel in root.children)
 {
-    foreach(var subDeckChapter in subDeckALevel.children)
+    Console.WriteLine("Starting " + subDeckALevel.name);
+    foreach (var subDeckChapter in subDeckALevel.children)
     {
+        Console.WriteLine("Starting " + subDeckChapter.name);
         var subdeckVocab = subDeckChapter.GetSubDeckByTitle("01 Vokabeln");
         var subdeckGrammar = subDeckChapter.GetSubDeckByTitle("02 Grammatik");
-        
-        foreach(var verb in subdeckVocab.GetNotesByNoteModel(noteModelVocab).Where(v => conjugations.Any(c => c.bare == v.fields[0])))
+
+        foreach (var word in subdeckVocab.GetNotesByNoteModel(noteModelVocab))
         {
+            foreach (var conjugation in conjugations)
+            {
+                if (conjugation.bare == StripHTML(word.ValueMain))
+                {
+                    //word is verb
+                    subdeckGrammar.notes.Add(new Note
+                    {
+                        note_model_uuid = noteModelVerb.crowdanki_uuid,
+                        guid = Guid.NewGuid().ToString(),
+                        __type__ = "Note",
+                        tags = new List<string>() { "Russisch::Verb" },
+                        fields = new List<string>()
+                        {
+                            word.fields.ElementAt(0), //Russian
+                            word.fields.ElementAt(2), //German
+                            ToAnkiAccentation( conjugation.sg1), //Singular 1st
+                            ToAnkiAccentation(conjugation.sg2),
+                            ToAnkiAccentation(conjugation.sg3),
+                            ToAnkiAccentation(conjugation.pl1),
+                            ToAnkiAccentation(conjugation.pl2),
+                            ToAnkiAccentation(conjugation.pl3),
+                        }
+                    });
+                }
+            }
         }
     }
 }
@@ -60,3 +89,34 @@ foreach (var subDeckALevel in root.children)
 
 // Export
 root.WriteToFile(deckPath);
+
+static string ToOpenRussianAccentation(string input)
+{
+    return input.Replace("</font>", "'").Replace("<font color=\"#ff0000\">", "");
+}
+
+static string ToAnkiAccentation(string input)
+{
+    var startIndex = input.IndexOf("'");
+    if(startIndex == -1){
+        return input;
+    }
+    try
+    {
+
+        var intermediate = input.Replace("'", "</font>");
+        var result = intermediate.Insert(startIndex - 1, "<font color=\"#ff0000\">");
+        return result;
+
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine("Couldn't insert value for " + input+" "+startIndex);
+        return null;
+    }
+}
+
+static string StripHTML(string input)
+{
+    return Regex.Replace(input, "<.*?>", String.Empty);
+}
