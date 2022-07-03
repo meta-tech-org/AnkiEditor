@@ -1,4 +1,4 @@
-﻿using AnkiEditor.Model;
+﻿using CrowdAnkiSchema.Model;
 using Newtonsoft.Json;
 using System;
 using System.IO;
