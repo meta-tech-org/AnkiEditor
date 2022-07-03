@@ -70,8 +70,8 @@ namespace CrowdAnkiSchema.Model
                 subDeck.FixMediaFiles();
             }
             Regex soundRegex = new Regex(@"(?<=\[sound:).*?(?=\])");
-            Regex imgRegex = new Regex(File.ReadAllText("regex.txt"));
-            foreach(var note in notes)
+            Regex imgRegex = new Regex("(?<=\\<img src=\\\").*?(?=\\\"\\>)"); //Not sure if this works
+            //Regex imgRegex = new Regex(File.ReadAllText("regex.txt"));
             foreach (var note in notes)
             {
                 foreach (var field in note.fields)
