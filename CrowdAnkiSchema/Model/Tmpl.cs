@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AnkiEditor.Model
+namespace CrowdAnkiSchema.Model
 {
     public class Tmpl
     {

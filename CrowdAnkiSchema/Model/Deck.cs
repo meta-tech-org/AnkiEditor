@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace AnkiEditor.Model
+namespace CrowdAnkiSchema.Model
 {
     public class Deck
     {
