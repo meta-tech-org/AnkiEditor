@@ -97,6 +97,18 @@ namespace CrowdAnkiSchema.Model
             }
         }
 
+        public void FixTags()
+        {
+            foreach (var subDeck in children)
+            {
+                subDeck.FixTags();
+            }
+            foreach (var note in notes)
+            {
+                note.tags = note.tags.Distinct().OrderBy(t => t).ToList();
+            }
+        }
+
         /// <summary>
         /// Sets the deck config (study options) for the current deck.
         /// </summary>
@@ -162,6 +174,7 @@ namespace CrowdAnkiSchema.Model
         public void WriteToFile(string path)
         {
             FixMediaFiles();
+            FixTags();
             string[] lines = JsonConvert.SerializeObject(this, new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented, //Try to match CrowdAnki export
