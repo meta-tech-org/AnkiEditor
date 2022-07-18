@@ -10,6 +10,8 @@ namespace AnkiEditor
     {
         static void Main(string[] args)
         {
+            AIDBMBSAddExcerciseSubdecks(@"C:\Users\juliu\source\repos\Anki Exports\Architecture_and_Implementation_of_Database_Management_Systems\deck.json");
+
             FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
         }
 
@@ -95,6 +97,11 @@ namespace AnkiEditor
 
             // Export
             root.WriteToFile(deckPath);
+        }
+
+        public static void AIDBMBSAddExcerciseSubdecks(string path)
+        {
+            
         }
     }
 
