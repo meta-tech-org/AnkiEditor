@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CrowdAnkiSchema.Model
 {
-    public class Deck : IEnumerable<Deck>
+    public class Deck
     {
         public string __type__ { get; set; }
         public List<Deck> children { get; set; }
@@ -207,16 +207,6 @@ namespace CrowdAnkiSchema.Model
             Console.WriteLine("Saving...");
             File.WriteAllText(path, resultString);
             Console.WriteLine("Saved to " + path);
-        }
-
-        public IEnumerator<Deck> GetEnumerator()
-        {
-            return children.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return children.GetEnumerator();
         }
 
         #endregion
