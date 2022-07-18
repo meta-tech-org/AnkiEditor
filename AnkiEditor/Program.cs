@@ -12,7 +12,7 @@ namespace AnkiEditor
         {
             AIDBMBSAddExcerciseSubdecks(@"C:\Users\juliu\source\repos\Anki Exports\Architecture_and_Implementation_of_Database_Management_Systems\deck.json");
 
-            FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
+            //FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
         }
 
         private static void FixJapaneseDeckStructure(string deckPath)
@@ -101,7 +101,21 @@ namespace AnkiEditor
 
         public static void AIDBMBSAddExcerciseSubdecks(string path)
         {
-            
+            var deck = Deck.LoadFromFile(path);
+            var subDeck1 = deck.children.First();
+            foreach (var chapter in subDeck1.children) {
+                var lectureDeck = chapter.GetSubDeckByTitle("01 Lecture");
+                if(lectureDeck == null)
+                {
+                    chapter.children.Add(Deck.CreateEmptyDeck("01 Lecture", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
+                }
+                var exDeck = chapter.GetSubDeckByTitle("02 Excercise");
+                if (exDeck == null)
+                {
+                    chapter.children.Add(Deck.CreateEmptyDeck("02 Excercise", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
+                }
+            }
+            deck.WriteToFile(path);
         }
     }
 
