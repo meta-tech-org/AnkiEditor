@@ -10,10 +10,11 @@ namespace AnkiEditor
     {
         static void Main(string[] args)
         {
-            string deckPath = @"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json";
-            //string deckPath = @"C:\Users\juliu_6las01j\Documents\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json";
+            FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
+        }
 
-            // Import
+        private static void FixJapaneseDeckStructure(string deckPath)
+        {
             Deck root = Deck.LoadFromFile(deckPath);
             var chapterConfig = root.GetDeckConfigurationByTitle("Japanisch::Kapitel");
             var kanaConfig = root.GetDeckConfigurationByTitle("Japanisch::Kana");
