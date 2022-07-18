@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CrowdAnkiSchema.Model
 {
-    public class Deck
+    public class Deck : IEnumerable<Deck>
     {
         public string __type__ { get; set; }
         public List<Deck> children { get; set; }
@@ -206,6 +207,16 @@ namespace CrowdAnkiSchema.Model
             Console.WriteLine("Saving...");
             File.WriteAllText(path, resultString);
             Console.WriteLine("Saved to " + path);
+        }
+
+        public IEnumerator<Deck> GetEnumerator()
+        {
+            return children.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return children.GetEnumerator();
         }
 
         #endregion
