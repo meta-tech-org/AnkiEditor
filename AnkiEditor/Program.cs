@@ -109,10 +109,10 @@ namespace AnkiEditor
                 {
                     chapter.children.Add(Deck.CreateEmptyDeck("01 Lecture", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
                 }
-                var exDeck = chapter.GetSubDeckByTitle("02 Excercise");
+                var exDeck = chapter.GetSubDeckByTitle("02 Exercise");
                 if (exDeck == null)
                 {
-                    chapter.children.Add(Deck.CreateEmptyDeck("02 Excercise", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
+                    chapter.children.Add(Deck.CreateEmptyDeck("02 Exercise", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
                 }
             }
             deck.WriteToFile(path);
