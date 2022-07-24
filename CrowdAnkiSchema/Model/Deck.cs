@@ -177,7 +177,10 @@ namespace CrowdAnkiSchema.Model
             FixMediaFiles();
             Console.WriteLine("Fixing tags...");
             FixTags();
+            Console.WriteLine("Fixing deck configurations...");
+            FixDeckConfigurations();
             Console.WriteLine("Serializing...");
+            
             string[] lines = JsonConvert.SerializeObject(this, new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented, //Try to match CrowdAnki export
@@ -206,6 +209,16 @@ namespace CrowdAnkiSchema.Model
             Console.WriteLine("Saving...");
             File.WriteAllText(path, resultString);
             Console.WriteLine("Saved to " + path);
+        }
+
+        private void FixDeckConfigurations()
+        {
+            //Fix deck configuration order
+            //deck_configurations = deck_configurations.OrderBy(d => d.crowdanki_uuid).ToList();
+            Console.WriteLine("TODO: Figure out the order in which deck configurations should be in and apply that.");
+
+            //Remove unused deck configurations
+            Console.WriteLine("TODO: Fix deck configurations. All unused deck configurations should be removed.");
         }
 
         #endregion
