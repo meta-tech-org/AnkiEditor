@@ -101,11 +101,14 @@ namespace AnkiEditor
 
         public static void AIDBMBSAddExcerciseSubdecks(string path)
         {
+
+            //Add subdecks
             var deck = Deck.LoadFromFile(path);
             var subDeck1 = deck.children.First();
-            foreach (var chapter in subDeck1.children) {
+            foreach (var chapter in subDeck1.children)
+            {
                 var lectureDeck = chapter.GetSubDeckByTitle("01 Lecture");
-                if(lectureDeck == null)
+                if (lectureDeck == null)
                 {
                     chapter.children.Add(Deck.CreateEmptyDeck("01 Lecture", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
                 }
@@ -113,6 +116,29 @@ namespace AnkiEditor
                 if (exDeck == null)
                 {
                     chapter.children.Add(Deck.CreateEmptyDeck("02 Exercise", "268c3ebf-2d30-11ec-b5f4-0c7a15ee466f"));
+                }
+            }
+
+            //Add study options to all subdecks
+            var chapterConfig = deck.GetDeckConfigurationByTitle("AIDBMS::Chapter");
+            var lectureConfig = deck.GetDeckConfigurationByTitle("AIDBMS::Lecture");
+            var exConfig = deck.GetDeckConfigurationByTitle("AIDBMS::Exercise");
+            var subChapterConfig = deck.GetDeckConfigurationByTitle("AIDBMS::Subchapter");
+            
+            foreach (var chapter in subDeck1.children)
+            {
+                chapter.SetDeckConfiguration(chapterConfig);
+                var lectures = chapter.children.First(c => c.name == "01 Lecture");
+                lectures.SetDeckConfiguration(lectureConfig);
+                foreach (var subChapter in lectures.children)
+                {
+                    subChapter.SetDeckConfiguration(subChapterConfig);
+                }
+                var exs = chapter.children.First(c => c.name == "02 Exercise");
+                exs.SetDeckConfiguration(exConfig);
+                foreach (var ex in exs.children)
+                {
+                    ex.SetDeckConfiguration(exConfig);
                 }
             }
             deck.WriteToFile(path);
