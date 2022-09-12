@@ -61,9 +61,11 @@ foreach (var subDeckALevel in root.children)
                 if (conjugation.bare == StripHTML(word.ValueMain))
                 {
                     //word is verb
-                    var tagList = word.tags;
-                    tagList.Add("Russisch::Verb");
-                    subdeckGrammar.AddNote(noteModelVerb.crowdanki_uuid, new List<string>()
+                    if (!subdeckGrammar.notes.Any(n => n.ValueMain == word.ValueMain && n.note_model_uuid == noteModelVerb.crowdanki_uuid)){
+                        //verb doesn't exist yet
+                        var tagList = word.tags;
+                        tagList.Add("Russisch::Verb");
+                        subdeckGrammar.AddNote(noteModelVerb.crowdanki_uuid, new List<string>()
                         {
                             word.fields.ElementAt(0), //Russian
                             word.fields.ElementAt(2), //German
@@ -74,6 +76,7 @@ foreach (var subDeckALevel in root.children)
                             ToAnkiAccentation(conjugation.pl2),
                             ToAnkiAccentation(conjugation.pl3),
                         }, tagList);
+                    }
                 }
             }
         }
