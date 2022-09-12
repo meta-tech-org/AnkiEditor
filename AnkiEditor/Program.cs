@@ -1,6 +1,7 @@
 ﻿using CrowdAnkiSchema.Model;
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 
@@ -10,11 +11,54 @@ namespace AnkiEditor
     {
         static void Main(string[] args)
         {
-            AIDBMBSAddExcerciseSubdecks(@"C:\Users\juliu\source\repos\Anki Exports\Architecture_and_Implementation_of_Database_Management_Systems\deck.json");
+            //AIDBMBSAddExcerciseSubdecks(@"C:\Users\juliu\source\repos\Anki Exports\Architecture_and_Implementation_of_Database_Management_Systems\deck.json");
 
             //FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
+            FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
         }
 
+        private static void FixRussianDeckStructure(string deckPath)
+        {
+            Deck root = Deck.LoadFromFile(deckPath);
+            var chapterConfig = root.GetDeckConfigurationByTitle("Russisch::Kapitel");
+            var vocabConfig = root.GetDeckConfigurationByTitle("Russisch::Vokabeln");
+            var grammarConfig = root.GetDeckConfigurationByTitle("Russisch::Grammatik");
+            var sentencesConfig = root.GetDeckConfigurationByTitle("Russisch::Sätze und Phrasen");
+            var tasksConfig = root.GetDeckConfigurationByTitle("Russisch::Aufgaben");
+            foreach (var level in root.children)
+            {
+                if(level.name == "B1")
+                {
+                    for (int i = 1; i <= 6; i++)
+                    {
+                        level.children.Add(Deck.CreateEmptyDeck("Kapitel 0" + i, chapterConfig.crowdanki_uuid));
+                    }
+                }
+                foreach (var chapter in level.children)
+                {
+                    chapter.SetDeckConfiguration(chapterConfig);
+                    if (!chapter.children.Any(c => c.name == "01 Vokabeln"))
+                    {
+                        chapter.children.Add(Deck.CreateEmptyDeck("01 Vokabeln", vocabConfig.crowdanki_uuid));
+                    }
+                    if (!chapter.children.Any(c => c.name == "02 Grammatik"))
+                    {
+                        chapter.children.Add(Deck.CreateEmptyDeck("02 Grammatik", grammarConfig.crowdanki_uuid));
+                    }
+                    if (!chapter.children.Any(c => c.name == "03 Sätze und Phrasen"))
+                    {
+                        chapter.children.Add(Deck.CreateEmptyDeck("03 Sätze und Phrasen", sentencesConfig.crowdanki_uuid));
+                    }
+                    if (!chapter.children.Any(c => c.name == "04 Aufgaben"))
+                    {
+                        chapter.children.Add(Deck.CreateEmptyDeck("04 Aufgaben", tasksConfig.crowdanki_uuid));
+                    }
+                }
+            }
+
+            // Export
+            root.WriteToFile(deckPath);
+        }
         private static void FixJapaneseDeckStructure(string deckPath)
         {
             Deck root = Deck.LoadFromFile(deckPath);
