@@ -14,7 +14,28 @@ namespace AnkiEditor
             //AIDBMBSAddExcerciseSubdecks(@"C:\Users\juliu\source\repos\Anki Exports\Architecture_and_Implementation_of_Database_Management_Systems\deck.json");
 
             //FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
-            FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
+            //FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
+            FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000\deck.json");
+        }
+
+        private static void FixJapaneseFrequencyDeckStructure(string deckPath)
+        {
+            Deck root = Deck.LoadFromFile(deckPath);
+            var baseConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000");
+            var levelConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Level");
+            var vocabConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Vocabulary");
+            var kanjiConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Kanji");
+            for (int i = 0; i <= 6000; i += 100)
+            {
+                string deckName = $"Level {i.ToString("0000")}";
+                if(!root.children.Any(d => d.name == deckName))
+                {
+                    root.children.Add(Deck.CreateEmptyDeck(deckName, baseConfig.crowdanki_uuid));
+                }
+            }
+
+            // Export
+            root.WriteToFile(deckPath);
         }
 
         private static void FixRussianDeckStructure(string deckPath)
@@ -27,13 +48,13 @@ namespace AnkiEditor
             var tasksConfig = root.GetDeckConfigurationByTitle("Russisch::Aufgaben");
             foreach (var level in root.children)
             {
-                if(level.name == "B1")
-                {
-                    for (int i = 1; i <= 6; i++)
-                    {
-                        level.children.Add(Deck.CreateEmptyDeck("Kapitel 0" + i, chapterConfig.crowdanki_uuid));
-                    }
-                }
+                //if(level.name == "B1")
+                //{
+                //    for (int i = 1; i <= 6; i++)
+                //    {
+                //        level.children.Add(Deck.CreateEmptyDeck("Kapitel 0" + i, chapterConfig.crowdanki_uuid));
+                //    }
+                //}
                 foreach (var chapter in level.children)
                 {
                     chapter.SetDeckConfiguration(chapterConfig);
