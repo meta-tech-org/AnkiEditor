@@ -24,6 +24,10 @@ namespace CrowdAnkiSchema.Model
         public List<string> media_files { get; set; }
         public long? mid { get; set; }
         public string name { get; set; }
+        public int? newLimit { get; set; }
+        public int? newLimitToday { get; set; }
+        public int? reviewLimit { get; set; }
+        public int? reviewLimitToday { get; set; }
         public List<NoteModel> note_models { get; set; }
         public NoteModel GetNoteModelByTitle(string title)
         {
