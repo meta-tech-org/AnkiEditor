@@ -20,11 +20,14 @@ namespace AnkiEditor
 
         private static void FixJapaneseFrequencyDeckStructure(string deckPath)
         {
+            //Fix deck structure
             Deck root = Deck.LoadFromFile(deckPath);
             var baseConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000");
             var levelConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Level");
             var vocabConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Vocabulary");
             var kanjiConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Kanji");
+
+            var noteModelKanji = root.GetNoteModelByTitle("Japanese::Kanji");
             for (int i = 0; i <= 6000; i += 100)
             {
                 string deckName = $"Level {i.ToString("0000")}";
@@ -61,6 +64,44 @@ namespace AnkiEditor
                 }
             }
 
+            //Move notes and create new cards
+            foreach (var level in root.children)
+            {
+                var vocabDeck = level.children.FirstOrDefault(d => d.name == "01 Vocabulary");
+                var levelMin = int.Parse(level.name.Replace("Level ", ""));
+                var levelMax = levelMin + 100;
+                var relevantNotes = root.notes.Where(n => int.Parse(n.ValueMain) < levelMax && int.Parse(n.ValueMain) >= levelMin).ToList();
+
+                var kanjiDeck = level.children.FirstOrDefault(d => d.name == "02 Kanji");
+                foreach (var relevantNote in relevantNotes)
+                {
+                    root.notes.Remove(relevantNote);
+                    vocabDeck.notes.Add(relevantNote);
+                    var kanjiFields = relevantNote.fields.Take(8).ToList();
+                    kanjiFields.Add("");
+                    kanjiDeck.AddNote(noteModelKanji.crowdanki_uuid, kanjiFields, new System.Collections.Generic.List<string>());
+                }
+
+            }
+
+            //Add kanji information
+            foreach (var level in root.children)
+            {
+                foreach (var subDeck in level.children)
+                {
+                    foreach (var note in subDeck.notes.Where(n => n.fields[5] == ""))
+                    {
+                        var word = note.fields.ElementAt(4);
+                        string wordKanji = word.Replace("[", "").Replace("]", "");
+                        var wordKana = note.fields.ElementAt(6);
+                        foreach (var letterKana in wordKana)
+                        {
+                            wordKanji = wordKanji.Replace(letterKana.ToString(), "");
+                        }
+                        note.fields[5] = wordKanji;
+                    }
+                }
+            }
             // Export
             root.WriteToFile(deckPath);
         }
