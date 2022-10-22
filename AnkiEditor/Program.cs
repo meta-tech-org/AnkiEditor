@@ -1,6 +1,7 @@
 ﻿using CrowdAnkiSchema.Model;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
@@ -15,13 +16,13 @@ namespace AnkiEditor
 
             //FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
             //FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
-            FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000\deck.json");
+            FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
         }
 
         private static void FixJapaneseFrequencyDeckStructure(string deckPath)
         {
             //Fix deck structure
-            Deck root = Deck.LoadFromFile(deckPath);
+            Deck root = Deck.LoadFromFile(Path.Combine(deckPath, "deck.json"));
             var baseConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000");
             var levelConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Level");
             var vocabConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Vocabulary");
@@ -84,26 +85,51 @@ namespace AnkiEditor
 
             }
 
+            List<string> allKanji = new List<string>();
             //Add kanji information
             foreach (var level in root.children)
             {
                 foreach (var subDeck in level.children)
                 {
-                    foreach (var note in subDeck.notes.Where(n => n.fields[5] == ""))
+                    if (subDeck.name == "02 Kanji")
                     {
-                        var word = note.fields.ElementAt(4);
-                        string wordKanji = word.Replace("[", "").Replace("]", "");
-                        var wordKana = note.fields.ElementAt(6);
-                        foreach (var letterKana in wordKana)
+                        foreach(var note in subDeck.notes)
                         {
-                            wordKanji = wordKanji.Replace(letterKana.ToString(), "");
+                            var kanji = note.fields[5];
+                            if(File.Exists(Path.Combine(deckPath, "media", kanji + ".png")))
+                            {
+                                string newContent = $"<img src=\"{kanji}.png\">";
+                                note.fields[9] = newContent;
+                            }
                         }
-                        note.fields[5] = wordKanji;
+                    }
+                    foreach (var note in subDeck.notes)
+                    {
+                        if (note.fields[5] == "")
+                        {
+                            var word = note.fields.ElementAt(4);
+                            string wordKanji = word.Replace("[", "").Replace("]", "");
+                            var wordKana = note.fields.ElementAt(6);
+                            foreach (var letterKana in wordKana)
+                            {
+                                wordKanji = wordKanji.Replace(letterKana.ToString(), "");
+                            }
+                            note.fields[5] = wordKanji;
+                        }
+                        else
+                        {
+                            if (!note.fields[3].Contains("(loan word)"))
+                            {
+                                allKanji.Add(note.fields[5]);
+                            }
+                        }
                     }
                 }
             }
+            allKanji = allKanji.Distinct().ToList();
+            File.WriteAllLines("kanjis.txt", allKanji);
             // Export
-            root.WriteToFile(deckPath);
+            root.WriteToFile(Path.Combine(deckPath, "deck.json"));
         }
 
         private static void FixRussianDeckStructure(string deckPath)
