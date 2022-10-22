@@ -28,9 +28,36 @@ namespace AnkiEditor
             for (int i = 0; i <= 6000; i += 100)
             {
                 string deckName = $"Level {i.ToString("0000")}";
-                if(!root.children.Any(d => d.name == deckName))
+                var level = root.children.FirstOrDefault(l => l.name == deckName);
+                if (level == null)
                 {
-                    root.children.Add(Deck.CreateEmptyDeck(deckName, baseConfig.crowdanki_uuid));
+                    root.children.Add(Deck.CreateEmptyDeck(deckName, levelConfig.crowdanki_uuid));
+                }
+                else
+                {
+                    level.SetDeckConfiguration(levelConfig);
+                }
+            }
+
+            foreach (var level in root.children)
+            {
+                var vocabDeck = level.children.FirstOrDefault(d => d.name == "01 Vocabulary");
+                var kanjiDeck = level.children.FirstOrDefault(d => d.name == "02 Kanji");
+                if (vocabDeck == null)
+                {
+                    level.children.Add(Deck.CreateEmptyDeck("01 Vocabulary", vocabConfig.crowdanki_uuid));
+                }
+                else
+                {
+                    vocabDeck.SetDeckConfiguration(vocabConfig);
+                }
+                if (kanjiDeck == null)
+                {
+                    level.children.Add(Deck.CreateEmptyDeck("02 Kanji", kanjiConfig.crowdanki_uuid));
+                }
+                else
+                {
+                    kanjiDeck.SetDeckConfiguration(kanjiConfig);
                 }
             }
 
@@ -189,7 +216,7 @@ namespace AnkiEditor
             var lectureConfig = deck.GetDeckConfigurationByTitle("AIDBMS::Lecture");
             var exConfig = deck.GetDeckConfigurationByTitle("AIDBMS::Exercise");
             var subChapterConfig = deck.GetDeckConfigurationByTitle("AIDBMS::Subchapter");
-            
+
             foreach (var chapter in subDeck1.children)
             {
                 chapter.SetDeckConfiguration(chapterConfig);
