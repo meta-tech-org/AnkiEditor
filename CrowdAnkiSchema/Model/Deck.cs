@@ -28,16 +28,16 @@ namespace CrowdAnkiSchema.Model
         public int? newLimit { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Include)]
         public int? newLimitToday { get; set; }
-        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
-        public int? reviewLimit { get; set; }
-        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
-        public int? reviewLimitToday { get; set; }
         public List<NoteModel> note_models { get; set; }
         public NoteModel GetNoteModelByTitle(string title)
         {
             return note_models.First(n => n.name == title);
         }
         public List<Note> notes { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        public int? reviewLimit { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        public int? reviewLimitToday { get; set; }
 
         public Note AddNote(string noteModelUUID, List<string> fieldValues, List<string> tags)
         {
