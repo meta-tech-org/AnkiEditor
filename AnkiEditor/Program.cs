@@ -21,6 +21,7 @@ namespace AnkiEditor
 
         private static void FixJapaneseFrequencyDeckStructure(string deckPath)
         {
+            //var iknow = File.ReadAllLines("C:\\Users\\juliu\\source\\repos\\IKnowJPDownloader\\IKnowJPDownloader\\IKnowJPDownloader\\bin\\Debug\\net6.0\\iknow.csv").Select(x => x.Split(";"));
             //Fix deck structure
             Deck root = Deck.LoadFromFile(Path.Combine(deckPath, "deck.json"));
             var baseConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000");
@@ -93,15 +94,22 @@ namespace AnkiEditor
                 {
                     if (subDeck.name == "02 Kanji")
                     {
-                        foreach(var note in subDeck.notes)
+                        foreach (var note in subDeck.notes)
                         {
                             var kanji = note.fields[5];
-                            if(File.Exists(Path.Combine(deckPath, "media", kanji + ".png")))
+                            if (File.Exists(Path.Combine(deckPath, "media", kanji + ".png")))
                             {
                                 string newContent = $"<img src=\"{kanji}.png\">";
                                 note.fields[9] = newContent;
                             }
                         }
+                    }
+                    else
+                    {
+                        //foreach (var note in subDeck.notes)
+                        //{
+                        //    note.fields[14] = iknow.FirstOrDefault(x => x[2] == note.fields[0])[15];
+                        //}
                     }
                     foreach (var note in subDeck.notes)
                     {
