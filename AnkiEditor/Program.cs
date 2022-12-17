@@ -16,7 +16,90 @@ namespace AnkiEditor
 
             //FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
             //FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
-            FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
+            //FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
+            FixDeepLearningDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Deep_Learning_(Goodfellow,_Bengio,_Courville)\deck.json");
+        }
+
+
+        private static void FixDeepLearningDeckStructure(string deckPath)
+        {
+            Deck root = Deck.LoadFromFile(deckPath);
+            var chapterConfig = root.GetDeckConfigurationByTitle("DL::Chapter");
+            var chapters = File.ReadAllLines(@"I:\Google Drive\Documents\Lernen\deep learning chapters.txt");
+            List<DeepLearningChapter> deepLearningChapters = new List<DeepLearningChapter>();
+            DeepLearningChapter currentChapter = null;
+            DeepLearningChapter currentSubChapter = null;
+            foreach (var chapter in chapters)
+            {
+                var clean = chapter.Trim();
+                var number = clean.Split(' ')[0];
+                var numberParts = number.Split(".");
+                string realNumber = "";
+                if (numberParts[1] == "0" && numberParts[2] == "0")
+                {
+                    currentChapter = new DeepLearningChapter
+                    {
+                        Name = clean,
+                        SubChapters = new List<DeepLearningChapter>()
+                    };
+                    deepLearningChapters.Add(currentChapter);
+                }
+                else if (numberParts[1] != "0" && numberParts[2] == "0")
+                {
+                    currentSubChapter = new DeepLearningChapter
+                    {
+                        Name = clean,
+                        SubChapters = new List<DeepLearningChapter>()
+                    };
+                    currentChapter.SubChapters.Add(currentSubChapter);
+                }
+                else
+                {
+                    currentSubChapter.SubChapters.Add(new DeepLearningChapter
+                    {
+                        Name = clean
+                    });
+                }
+            }
+
+            foreach(var chapter in deepLearningChapters)
+            {
+                var ankiChapter = Deck.CreateEmptyDeck(chapter.InferredName, chapterConfig.crowdanki_uuid);
+                root.children.Add(ankiChapter);
+                foreach(var subChapter in chapter.SubChapters)
+                {
+                    var ankiSubChapter = Deck.CreateEmptyDeck(subChapter.InferredName, chapterConfig.crowdanki_uuid);
+                    ankiChapter.children.Add(ankiSubChapter);
+                    foreach (var subSubChapter in subChapter.SubChapters)
+                    {
+                        var ankiSubSubChapter = Deck.CreateEmptyDeck(subSubChapter.InferredName, chapterConfig.crowdanki_uuid);
+                        ankiSubChapter.children.Add(ankiSubSubChapter);
+                    }
+                }
+            }
+            root.WriteToFile(deckPath);
+        }
+
+        private class DeepLearningChapter
+        {
+            public string Name { get; set; }
+            public string InferredName
+            {
+                get
+                {
+                    var title = Name.Substring(Name.IndexOf(' '));
+                    var parts = Name.Split(" ")[0].Split(".");
+                    string number1 = parts[0].Length == 1 ? "0" + parts[0] : parts[0];
+                    string number2 = parts[1].Length == 1 ? "0" + parts[1] : parts[1];
+                    string number3 = parts[2].Length == 1 ? "0" + parts[2] : parts[2];
+                    return $"{number1}.{number2}.{number3} {title}".Replace(".00","");
+                }
+            }
+            public List<DeepLearningChapter> SubChapters { get; set; }
+            public override string ToString()
+            {
+                return InferredName;
+            }
         }
 
         private static void FixJapaneseFrequencyDeckStructure(string deckPath)
@@ -29,113 +112,9 @@ namespace AnkiEditor
             var vocabConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Vocabulary");
             var kanjiConfig = root.GetDeckConfigurationByTitle("Japanese Frequency 6000::Kanji");
 
-            var noteModelKanji = root.GetNoteModelByTitle("Japanese::Kanji");
-            for (int i = 0; i <= 6000; i += 100)
-            {
-                string deckName = $"Level {i.ToString("0000")}";
-                var level = root.children.FirstOrDefault(l => l.name == deckName);
-                if (level == null)
-                {
-                    root.children.Add(Deck.CreateEmptyDeck(deckName, levelConfig.crowdanki_uuid));
-                }
-                else
-                {
-                    level.SetDeckConfiguration(levelConfig);
-                }
-            }
+            root.children = root.children.Where(c => !c.name.Contains("Level")).ToList();
 
-            foreach (var level in root.children)
-            {
-                var vocabDeck = level.children.FirstOrDefault(d => d.name == "01 Vocabulary");
-                var kanjiDeck = level.children.FirstOrDefault(d => d.name == "02 Kanji");
-                if (vocabDeck == null)
-                {
-                    level.children.Add(Deck.CreateEmptyDeck("01 Vocabulary", vocabConfig.crowdanki_uuid));
-                }
-                else
-                {
-                    vocabDeck.SetDeckConfiguration(vocabConfig);
-                }
-                if (kanjiDeck == null)
-                {
-                    level.children.Add(Deck.CreateEmptyDeck("02 Kanji", kanjiConfig.crowdanki_uuid));
-                }
-                else
-                {
-                    kanjiDeck.SetDeckConfiguration(kanjiConfig);
-                }
-            }
 
-            //Move notes and create new cards
-            foreach (var level in root.children)
-            {
-                var vocabDeck = level.children.FirstOrDefault(d => d.name == "01 Vocabulary");
-                var levelMin = int.Parse(level.name.Replace("Level ", ""));
-                var levelMax = levelMin + 100;
-                var relevantNotes = root.notes.Where(n => int.Parse(n.ValueMain) < levelMax && int.Parse(n.ValueMain) >= levelMin).ToList();
-
-                var kanjiDeck = level.children.FirstOrDefault(d => d.name == "02 Kanji");
-                foreach (var relevantNote in relevantNotes)
-                {
-                    root.notes.Remove(relevantNote);
-                    vocabDeck.notes.Add(relevantNote);
-                    var kanjiFields = relevantNote.fields.Take(8).ToList();
-                    kanjiFields.Add("");
-                    kanjiDeck.AddNote(noteModelKanji.crowdanki_uuid, kanjiFields, new System.Collections.Generic.List<string>());
-                }
-
-            }
-
-            List<string> allKanji = new List<string>();
-            //Add kanji information
-            foreach (var level in root.children)
-            {
-                foreach (var subDeck in level.children)
-                {
-                    if (subDeck.name == "02 Kanji")
-                    {
-                        foreach (var note in subDeck.notes)
-                        {
-                            var kanji = note.fields[5];
-                            if (File.Exists(Path.Combine(deckPath, "media", kanji + ".png")))
-                            {
-                                string newContent = $"<img src=\"{kanji}.png\">";
-                                note.fields[9] = newContent;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        //foreach (var note in subDeck.notes)
-                        //{
-                        //    note.fields[14] = iknow.FirstOrDefault(x => x[2] == note.fields[0])[15];
-                        //}
-                    }
-                    foreach (var note in subDeck.notes)
-                    {
-                        if (note.fields[5] == "")
-                        {
-                            var word = note.fields.ElementAt(4);
-                            string wordKanji = word.Replace("[", "").Replace("]", "");
-                            var wordKana = note.fields.ElementAt(6);
-                            foreach (var letterKana in wordKana)
-                            {
-                                wordKanji = wordKanji.Replace(letterKana.ToString(), "");
-                            }
-                            note.fields[5] = wordKanji;
-                        }
-                        else
-                        {
-                            if (!note.fields[3].Contains("(loan word)"))
-                            {
-                                allKanji.Add(note.fields[5]);
-                            }
-                        }
-                    }
-                }
-            }
-            allKanji = allKanji.Distinct().ToList();
-            File.WriteAllLines("kanjis.txt", allKanji);
             // Export
             root.WriteToFile(Path.Combine(deckPath, "deck.json"));
         }
