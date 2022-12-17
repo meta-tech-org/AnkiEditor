@@ -17,11 +17,60 @@ namespace AnkiEditor
             //FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
             //FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
             //FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
-            FixDeepLearningDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Deep_Learning_(Goodfellow,_Bengio,_Courville)\deck.json");
+            //FixDeepLearningDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Deep_Learning_(Goodfellow,_Bengio,_Courville)\deck.json");
+            FixDIPDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Digital_Image_Processing_(Gonzalez,_Woods)\deck.json");
         }
 
+        private static void FixDIPDeckStructure(string deckPath)
+        {
+            Deck root = Deck.LoadFromFile(deckPath);
+            var chapterConfig = root.GetDeckConfigurationByTitle("DIP::Chapter");
+            var chapters = File.ReadAllLines(@"I:\Google Drive\Documents\Lernen\digital image processing chapters.txt");
+            int subCounter = 1;
+            List<DeepLearningChapter> deepLearningChapters = new List<DeepLearningChapter>();
+            DeepLearningChapter currentChapter = null;
+            foreach (var line in chapters)
+            {
+                bool isChapter = int.TryParse(line.Split(' ')[0], out _);
+                string clean = line;
 
-        private static void FixDeepLearningDeckStructure(string deckPath)
+                if (isChapter)
+                {
+                    subCounter = 1;
+                    if(line.Split(' ')[0].Length == 1)
+                    {
+                        clean = "0" + line;
+                    }
+                    currentChapter = new DeepLearningChapter
+                    {
+                        Name = clean,
+                        SubChapters = new List<DeepLearningChapter>()
+                    };
+                    deepLearningChapters.Add(currentChapter);
+                }
+                else
+                {
+                    currentChapter.SubChapters.Add(new DeepLearningChapter
+                    {
+                        Name = $"{subCounter.ToString("00")} {clean}"
+                    }) ;
+                    subCounter++;
+                }
+            }
+            foreach (var chapter in deepLearningChapters)
+            {
+                var ankiChapter = Deck.CreateEmptyDeck(chapter.Name, chapterConfig.crowdanki_uuid);
+                root.children.Add(ankiChapter);
+                foreach (var subChapter in chapter.SubChapters)
+                {
+                    var ankiSubChapter = Deck.CreateEmptyDeck(subChapter.Name, chapterConfig.crowdanki_uuid);
+                    ankiChapter.children.Add(ankiSubChapter);
+                }
+            }
+            root.WriteToFile(deckPath);
+        }
+
+            private static void FixDeepLearningDeckStructure(string deckPath)
         {
             Deck root = Deck.LoadFromFile(deckPath);
             var chapterConfig = root.GetDeckConfigurationByTitle("DL::Chapter");
