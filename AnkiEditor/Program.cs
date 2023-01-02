@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace AnkiEditor
 {
@@ -18,8 +19,89 @@ namespace AnkiEditor
             //FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
             //FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
             //FixDeepLearningDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Deep_Learning_(Goodfellow,_Bengio,_Courville)\deck.json");
-            FixDIPDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Digital_Image_Processing_(Gonzalez,_Woods)\deck.json");
+            //FixDIPDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Digital_Image_Processing_(Gonzalez,_Woods)\deck.json");
+
+            List<(string, string)> testValues = new List<(string, string)>();
+            //testValues.Add(("日本語を勉強しています。", "にほんご を べんきょう しています。"));
+            //testValues.Add(("お茶を飲みます。", "おちゃ を のみます。"));
+            //testValues.Add(("今日は晴れです。", "きょう は はれです。"));
+            testValues.Add(("日本語を勉強しています。", "にほんごをべんきょうしています。"));
+            testValues.Add(("お茶を飲みます。", "おちゃをのみます。"));
+            testValues.Add(("今日は晴れです。", "きょうははれです。"));
+            foreach (var testValue in testValues)
+            {
+                var result = AddFurigana(testValue.Item1, testValue.Item2);
+            }
         }
+
+        private static bool IsKanji(string str)
+        {
+            // Create a lookup table of all hiragana/katakana characters
+            string kana = "あいうえおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもやゆよらりるれろわをん";
+
+            // Check if the input string contains any characters that are not in the lookup table
+            foreach (char c in str)
+            {
+                if (!kana.Contains(c))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsKanji(char c)
+        {
+            return IsKanji(c.ToString());
+        }
+
+        public static string AddFurigana(string kanjiSentence, string kanaSentence)
+        {
+            // Initialize an empty result string
+            string result = "";
+
+            // Initialize indices for the kanji sentence and kana sentence
+            int kanjiIndex = 0;
+            int kanaIndex = 0;
+
+            // Loop until one of the indices reaches the end of the corresponding sentence
+            while (kanjiIndex < kanjiSentence.Length && kanaIndex < kanaSentence.Length)
+            {
+                // If the current character of the kanji sentence is a kanji, add it to the result string
+                if (IsKanji(kanjiSentence[kanjiIndex]))
+                {
+                    result += kanjiSentence[kanjiIndex];
+
+                    // Find the next kanji character in the kanji sentence
+                    int nextKanjiIndex = kanjiSentence.IndexOfAny(new char[] { '\u4E00', '\u4E8C', '\u4E09', '\u56DB', '\u4E94', '\u516D', '\u4E03', '\u516B', '\u4E5D', '\u5341' }, kanjiIndex + 1);
+                    if (nextKanjiIndex == -1)
+                    {
+                        nextKanjiIndex = kanjiSentence.Length;
+                    }
+
+                    // Find the corresponding kana characters in the kana sentence
+                    string kana = kanaSentence.Substring(kanaIndex, nextKanjiIndex - kanjiIndex);
+
+                    // Add the kana characters in brackets after the kanji character
+                    result += "[" + kana + "]";
+
+                    // Update the indices
+                    kanjiIndex = nextKanjiIndex;
+                    kanaIndex += kana.Length;
+                }
+                // If the current character of the kanji sentence is not a kanji, add it to the result string without any changes
+                else
+                {
+                    result += kanjiSentence[kanjiIndex];
+                    kanjiIndex++;
+                    kanaIndex++;
+                }
+            }
+
+            return result;
+        }
+
 
         private static void FixDIPDeckStructure(string deckPath)
         {
