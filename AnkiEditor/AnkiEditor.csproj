@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CrowdAnkiSchema\CrowdAnkiSchema.csproj" />
+    <ProjectReference Include="..\OpenRussian\OpenRussian.csproj" />
   </ItemGroup>
 
 </Project>
