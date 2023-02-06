@@ -80,8 +80,17 @@ namespace CrowdAnkiSchema.Model
             }
             Regex soundRegex = new Regex(@"(?<=\[sound:).*?(?=\])");
             Regex imgRegex = new Regex("(?<=\\<img src=\\\").*?(?=\\\"\\s?\\/?\\>)"); //Non-formatted for C#: (?<=\<img src=\").*?(?=\"\s?\/?\>)
+            if(notes.Count > 100)
+            {
+                Console.WriteLine($"Found {notes.Count} notes");
+            }
+            int i = 1;
             foreach (var note in notes)
             {
+                if (i % 100 == 0)
+                {
+                    Console.WriteLine($"Progress: {i}/{notes.Count}");
+                }
                 foreach (var field in note.fields)
                 {
                     foreach (var match in soundRegex.Matches(field))
@@ -102,6 +111,7 @@ namespace CrowdAnkiSchema.Model
                     }
                     this.media_files = this.media_files.Distinct().OrderBy(f => f).ToList();
                 }
+                i++;
             }
         }
 
@@ -199,7 +209,7 @@ namespace CrowdAnkiSchema.Model
             Console.WriteLine("Fixing deck configurations...");
             FixDeckConfigurations();
             Console.WriteLine("Serializing...");
-            
+
             string[] lines = JsonConvert.SerializeObject(this, new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented, //Try to match CrowdAnki export
