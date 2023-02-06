@@ -332,7 +332,7 @@ namespace AnkiEditor
             //var iknow = File.ReadAllLines("C:\\Users\\juliu\\source\\repos\\IKnowJPDownloader\\IKnowJPDownloader\\IKnowJPDownloader\\bin\\Debug\\net6.0\\iknow.csv").Select(x => x.Split(";"));
             //Fix deck structure
             Deck root = Deck.LoadFromFile(deckPath);
-            var vocabDeck = root.children.First(c => c.name == "Words").children.First(c => c.name == "01 Vocabulary");
+            var vocabDeck = root.children.First(c => c.name == "Words").children.First(c => c.name == "02 Kanji");
             foreach(var note in vocabDeck.notes)
             {
                 var word = note.fields[4];
@@ -341,10 +341,10 @@ namespace AnkiEditor
                 var fixedWord = AddFurigana(kanji, kana);
                 note.fields[4] = fixedWord;
 
-                var kanjiSentence = note.fields[10].Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "");
-                var kanaSentence = note.fields[11].Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "").Replace(" ", "");
-                var fixedSentence = AddFurigana(kanjiSentence, kanaSentence);
-                note.fields[10] = fixedSentence;
+                //var kanjiSentence = note.fields[10].Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "");
+                //var kanaSentence = note.fields[11].Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "").Replace(" ", "");
+                //var fixedSentence = AddFurigana(kanjiSentence, kanaSentence);
+                //note.fields[10] = fixedSentence;
             }
             root.WriteToFile(deckPath);
         }
