@@ -16,23 +16,11 @@ namespace AnkiEditor
         static void Main(string[] args)
         {
             //AIDBMBSAddExcerciseSubdecks(@"C:\Users\juliu\source\repos\Anki Exports\Architecture_and_Implementation_of_Database_Management_Systems\deck.json");
-
             FixJapaneseFrequencyFuriganaDeckStructure(@"C:\Users\juliu\source\Anki Exports\Japanese_Frequency_6000\deck.json");
             //FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
             //FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
             //FixDeepLearningDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Deep_Learning_(Goodfellow,_Bengio,_Courville)\deck.json");
             //FixDIPDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Digital_Image_Processing_(Gonzalez,_Woods)\deck.json");
-            List<(string, string)> testValues = new List<(string, string)>();
-            //testValues.Add(("日本語を勉強しています。", "にほんご を べんきょう しています。"));
-            //testValues.Add(("お茶を飲みます。", "おちゃ を のみます。"));
-            //testValues.Add(("今日は晴れです。", "きょう は はれです。"));
-            testValues.Add(("日本語を勉強しています。", "にほんごをべんきょうしています。"));
-            testValues.Add(("お茶を飲みます。", "おちゃをのみます。"));
-            testValues.Add(("今日は晴れです。", "きょうははれです。"));
-            foreach (var testValue in testValues)
-            {
-                var result = AddFurigana(testValue.Item1, testValue.Item2);
-            }
         }
 
         private static bool IsHiragana(this char c)
@@ -135,50 +123,78 @@ namespace AnkiEditor
             return runs;
         }
 
-        public static string AddFurigana(string kanjiSentence, string kanaSentence)
+        public static string AddFurigana(string kanji, string kana)
         {
-            // Initialize an empty result string
-            string result = "";
-
-            // Initialize indices for the kanji sentence and kana sentence
-            int kanjiIndex = 0;
-            int kanaIndex = 0;
-
-            // Loop until one of the indices reaches the end of the corresponding sentence
-            while (kanjiIndex < kanjiSentence.Length && kanaIndex < kanaSentence.Length)
+            var runs = SeparateIntoCharacterRuns(kanji);
+            string furiganaString = "";
+            for (int r = 0; r < runs.Count; r++)
             {
-                // If the current character of the kanji sentence is a kanji, add it to the result string
-                if (IsKanji(kanjiSentence[kanjiIndex]))
+                var run = runs[r];
+                (char, string)? runNext = r + 1 < runs.Count ? runs[r + 1] : null;
+                if (run.Item1 == 'H')
                 {
-                    result += kanjiSentence[kanjiIndex];
+                    //Add unaltered hiragana to the string
+                    furiganaString += run.Item2;
 
-                    // Find the next kanji character in the kanji sentence
-                    int nextKanjiIndex = kanjiSentence.IndexOfAny(new char[] { '\u4E00', '\u4E8C', '\u4E09', '\u56DB', '\u4E94', '\u516D', '\u4E03', '\u516B', '\u4E5D', '\u5341' }, kanjiIndex + 1);
-                    if (nextKanjiIndex == -1)
+                    //If the current block consists of hiragana, remove them from the kana list
+                    kana = kana.ReplaceFirst(run.Item2, "");
+                }
+                else if (run.Item1 == 'K')
+                {
+                    //Add unaltered katakana to the string
+                    furiganaString += run.Item2;
+
+                    //Find corresponding hiragana symbol
+                    var hiraganaRun = new string(run.Item2.Select(c => c.ToHiragana()).ToArray());
+
+                    //If the current block consists of hiragana or katakana, remove them from the kana list
+                    kana = kana.ReplaceFirst(hiraganaRun, "");
+                }
+                else if (run.Item1 == 'W')
+                {
+                    string currentFurigana = "";
+                    //If the current block consists of kanji, find the index of the next block
+                    if (runNext == null)
                     {
-                        nextKanjiIndex = kanjiSentence.Length;
+                        //If there is no next block, the string ends with a kanji and all remaining kana must be added.
+                        currentFurigana = kana;
+                    }
+                    else
+                    {
+                        //If there is a next block, use that
+
+                        //If the next run is katakana, retrieve the corresponding hiragana first
+                        string hiraganaRunNext = "";
+                        if (runNext?.Item1 == 'K')
+                        {
+                            hiraganaRunNext = new string(runNext?.Item2.Select(c => c.ToHiragana()).ToArray());
+                        }
+                        else
+                        {
+                            hiraganaRunNext = runNext?.Item2;
+                        }
+                        var nextIndex = kana.Substring(1).IndexOf(hiraganaRunNext) + 1; //Source of probems if the next block (Example: "de" is fully contained in the current kanji block, example: "densha" (densha de ...) - the wrong index is selected.
+                                                                                        //var nextIndex = kana.Substring(1).IndexOf(hiraganaRunNext)+1; 
+                        currentFurigana = kana.Substring(0, nextIndex);
                     }
 
-                    // Find the corresponding kana characters in the kana sentence
-                    string kana = kanaSentence.Substring(kanaIndex, nextKanjiIndex - kanjiIndex);
+                    //Add a space before the next kanji block
+                    if (furiganaString != "")
+                    {
+                        furiganaString += " ";
+                    }
 
-                    // Add the kana characters in brackets after the kanji character
-                    result += "[" + kana + "]";
+                    //Add the kanji block
+                    furiganaString += run.Item2;
+                    //Add the furigana
+                    furiganaString += $"[{currentFurigana}]";
 
-                    // Update the indices
-                    kanjiIndex = nextKanjiIndex;
-                    kanaIndex += kana.Length;
-                }
-                // If the current character of the kanji sentence is not a kanji, add it to the result string without any changes
-                else
-                {
-                    result += kanjiSentence[kanjiIndex];
-                    kanjiIndex++;
-                    kanaIndex++;
+                    //Remove the current furigana from the kana list
+                    kana = kana.ReplaceFirst(currentFurigana, "");
                 }
             }
 
-            return result;
+            return furiganaString;
         }
 
 
@@ -316,156 +332,21 @@ namespace AnkiEditor
             //var iknow = File.ReadAllLines("C:\\Users\\juliu\\source\\repos\\IKnowJPDownloader\\IKnowJPDownloader\\IKnowJPDownloader\\bin\\Debug\\net6.0\\iknow.csv").Select(x => x.Split(";"));
             //Fix deck structure
             Deck root = Deck.LoadFromFile(deckPath);
-            var vocabList = root.GetAllNotes().Where(n => n.note_model_uuid == "a5a31593-5219-11ed-acf0-0c7a15ee466f");
-            var data = vocabList.Select(v => v.fields[4].ToString()).ToList();
-            var kanjiSentences = vocabList.Select(v => v.fields[10].ToString().Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "")).ToList();
-            var kanaSentences = vocabList.Select(v => v.fields[11].ToString().Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "").Replace(" ", "")).ToList();
-            var fullKanji = data.Select(d => d.Split("[")[0]).ToList();
-            var fullFurigana = data.Select(d => d.Split("[")[1].Replace("]", "")).ToList();
-
-
-            List<(string, string)> examples = new List<(string, string)>();
-
-            for (int i = 0; i < kanjiSentences.Count; i++)
+            var vocabDeck = root.children.First(c => c.name == "Words").children.First(c => c.name == "01 Vocabulary");
+            foreach(var note in vocabDeck.notes)
             {
-                var kanji = kanjiSentences[i];
-                var kana = kanaSentences[i];
+                var word = note.fields[4];
+                var kanji = word.Split("[")[0];
+                var kana = word.Split("[")[1].Replace("]", "");
+                var fixedWord = AddFurigana(kanji, kana);
+                note.fields[4] = fixedWord;
 
-                var runs = SeparateIntoCharacterRuns(kanji);
-                string furiganaString = "";
-                for (int r = 0; r < runs.Count; r++)
-                {
-                    var run = runs[r];
-                    (char, string)? runNext = r + 1 < runs.Count ? runs[r + 1] : null;
-                    if (run.Item1 == 'H')
-                    {
-                        //Add unaltered hiragana to the string
-                        furiganaString += run.Item2;
-
-                        //If the current block consists of hiragana, remove them from the kana list
-                        kana = kana.ReplaceFirst(run.Item2, "");
-                    }
-                    else if (run.Item1 == 'K')
-                    {
-                        //Add unaltered katakana to the string
-                        furiganaString += run.Item2;
-
-                        //Find corresponding hiragana symbol
-                        var hiraganaRun = new string(run.Item2.Select(c => c.ToHiragana()).ToArray());
-
-                        //If the current block consists of hiragana or katakana, remove them from the kana list
-                        kana = kana.ReplaceFirst(hiraganaRun, "");
-                    }
-                    else if (run.Item1 == 'W')
-                    {
-                        string currentFurigana = "";
-                        //If the current block consists of kanji, find the index of the next block
-                        if (runNext == null)
-                        {
-                            //If there is no next block, the string ends with a kanji and all remaining kana must be added.
-                            currentFurigana = kana;
-                        }
-                        else
-                        {
-                            //If there is a next block, use that
-
-                            //If the next run is katakana, retrieve the corresponding hiragana first
-                            string hiraganaRunNext = "";
-                            if (runNext?.Item1 == 'K')
-                            {
-                                hiraganaRunNext = new string(runNext?.Item2.Select(c => c.ToHiragana()).ToArray());
-                            }
-                            else
-                            {
-                                hiraganaRunNext = runNext?.Item2;
-                            }
-                            var nextIndex = kana.Substring(1).IndexOf(hiraganaRunNext)+1; //Source of probems if the next block (Example: "de" is fully contained in the current kanji block, example: "densha" (densha de ...) - the wrong index is selected.
-                            //var nextIndex = kana.Substring(1).IndexOf(hiraganaRunNext)+1; 
-                            currentFurigana = kana.Substring(0, nextIndex);
-                        }
-
-                        //Add a space before the next kanji block
-                        if (furiganaString != "")
-                        {
-                            furiganaString += " ";
-                        }
-
-                        //Add the kanji block
-                        furiganaString += run.Item2;
-                        //Add the furigana
-                        furiganaString += $"[{currentFurigana}]";
-
-                        //Remove the current furigana from the kana list
-                        kana = kana.ReplaceFirst(currentFurigana, "");
-                    }
-                }
-                examples.Add((kanji, furiganaString));
+                var kanjiSentence = note.fields[10].Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "");
+                var kanaSentence = note.fields[11].Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "").Replace(" ", "");
+                var fixedSentence = AddFurigana(kanjiSentence, kanaSentence);
+                note.fields[10] = fixedSentence;
             }
-
-            var errors = examples.Where(e => e.Item2.Contains("[]")).ToList();
-
-            var groups = fullKanji.GroupBy(k => k.GetWordType()).OrderBy(g => g.Key.Length).ToList();
-            var compGroups = fullKanji.GroupBy(k => k.GetCompressedWordType()).OrderBy(g => g.Key.Length).ToList();
-
-            foreach (var group in compGroups)
-            {
-                if (group.Key == "W")
-                {
-                    //Add all as furi (do nothing)
-                }
-                else if (group.Key == "H")
-                {
-                    //Add none
-                }
-                else if (group.Key == "K")
-                {
-                    //Add none
-                }
-                else if (group.Key == "WH")
-                {
-                    //Add only first part
-                }
-                else if (group.Key == "HW")
-                {
-                    //Add only last part
-                }
-                else if (group.Key == "WK")
-                {
-                    //Add only first part
-                }
-                else if (group.Key == "KW")
-                {
-                    //Add only last part
-                }
-                else if (group.Key == "KH")
-                {
-                    //Add none
-                }
-                else if (group.Key == "WHW")
-                {
-                    //Add
-                }
-                else if (group.Key == "HWH")
-                {
-                    //Add
-                }
-                else if (group.Key == "WHK")
-                {
-                    //Manually
-                }
-                else if (group.Key == "WHWH")
-                {
-                    //Add
-                }
-                else if (group.Key == "WHWHW")
-                {
-                    //Add
-                }
-                else
-                {
-                    throw new Exception();
-                }
-            }
+            root.WriteToFile(deckPath);
         }
 
         private static void FixJapaneseFrequencyDeckStructure(string deckPath)
