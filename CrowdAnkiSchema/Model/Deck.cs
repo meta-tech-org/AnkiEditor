@@ -168,6 +168,17 @@ namespace CrowdAnkiSchema.Model
             };
         }
 
+        /// <summary>
+        /// Returns all notes recursively, including from subdecks.
+        /// </summary>
+        /// <returns></returns>
+        public List<Note> GetAllNotes()
+        {
+            List<Note> allNotes = notes;
+            allNotes.AddRange(children.SelectMany(d => d.GetAllNotes()));
+            return allNotes;
+        }
+
         public override string ToString()
         {
             return $"Deck {name}, children: {children.Count}, notes: {notes.Count}";
