@@ -9,18 +9,19 @@ using System.Text;
 
 namespace AnkiEditor
 {
-    class Program
+    static class Program
     {
+        const string HIRAGANA = "あいうえおかがきぎくぐけげこごさざしじすずせぜそぞただちぢつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもやゆよらりるれろわをんゃゅょっぁぇぃぉぅー。、「」０１２３４５６７８９";
+        const string KATAKANA = "アイウエオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモヤユヨラリルレロワヲンャュョッァェィォゥー。、「」０１２３４５６７８９";
         static void Main(string[] args)
         {
             //AIDBMBSAddExcerciseSubdecks(@"C:\Users\juliu\source\repos\Anki Exports\Architecture_and_Implementation_of_Database_Management_Systems\deck.json");
 
-            //FixJapaneseDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanisch,_bitte!_Neu\deck.json");
+            FixJapaneseFrequencyFuriganaDeckStructure(@"C:\Users\juliu\source\Anki Exports\Japanese_Frequency_6000\deck.json");
             //FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
             //FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
             //FixDeepLearningDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Deep_Learning_(Goodfellow,_Bengio,_Courville)\deck.json");
             //FixDIPDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Digital_Image_Processing_(Gonzalez,_Woods)\deck.json");
-
             List<(string, string)> testValues = new List<(string, string)>();
             //testValues.Add(("日本語を勉強しています。", "にほんご を べんきょう しています。"));
             //testValues.Add(("お茶を飲みます。", "おちゃ を のみます。"));
@@ -34,26 +35,104 @@ namespace AnkiEditor
             }
         }
 
-        private static bool IsKanji(string str)
+        private static bool IsHiragana(this char c)
         {
-            // Create a lookup table of all hiragana/katakana characters
-            string kana = "あいうえおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもやゆよらりるれろわをん";
+            return HIRAGANA.Contains(c);
+        }
 
-            // Check if the input string contains any characters that are not in the lookup table
-            foreach (char c in str)
+        private static bool IsKatakana(this char c)
+        {
+            return KATAKANA.Contains(c);
+        }
+
+        private static bool IsRomaji(this char c)
+        {
+            return /*(c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || */(c >= '0' && c <= '9');
+        }
+
+        private static bool IsKanji(this char c)
+        {
+            return !IsHiragana(c) && !IsKatakana(c) && !IsRomaji(c);
+        }
+
+        private static char GetLetterType(this char c)
+        {
+            if (c.IsKanji())
             {
-                if (!kana.Contains(c))
+                return 'W';
+            }
+            if (c.IsHiragana())
+            {
+                return 'H';
+            }
+            if (c.IsKatakana())
+            {
+                return 'K';
+            }
+            if (c.IsRomaji())
+            {
+                return 'R';
+            }
+            return 'E';
+        }
+
+        private static string GetWordType(this string word)
+        {
+            string type = "";
+            foreach (var c in word)
+            {
+                type += c.GetLetterType();
+            }
+            return type;
+        }
+
+        private static string GetCompressedWordType(this string word)
+        {
+            var wordType = word.GetWordType();
+            string compressed = "";
+            char current = '_';
+            foreach (var c in wordType)
+            {
+                if (c != current)
                 {
-                    return true;
+                    compressed += c;
+                    current = c;
                 }
             }
 
-            return false;
+            return compressed;
         }
 
-        private static bool IsKanji(char c)
+        public static char ToHiragana(this char katakana)
         {
-            return IsKanji(c.ToString());
+            int index = katakana.IsKatakana() ? KATAKANA.IndexOf(katakana) : -1;
+            return HIRAGANA[index];
+        }
+
+        private static List<(char, string)> SeparateIntoCharacterRuns(string sentence)
+        {
+            List<(char, string)> runs = new List<(char, string)>();
+            char previousType = sentence[0].GetLetterType();
+            string currentString = sentence[0].ToString();
+            for (int i = 1; i < sentence.Length; i++)
+            {
+                var currentType = sentence[i].GetLetterType();
+                if (previousType != currentType)
+                {
+                    runs.Add((previousType, currentString));
+                    currentString = sentence[i].ToString();
+                }
+                else
+                {
+                    currentString += sentence[i];
+                }
+                previousType = currentType;
+            }
+            if (currentString.Length > 0)
+            {
+                runs.Add((previousType, currentString));
+            }
+            return runs;
         }
 
         public static string AddFurigana(string kanjiSentence, string kanaSentence)
@@ -119,7 +198,7 @@ namespace AnkiEditor
                 if (isChapter)
                 {
                     subCounter = 1;
-                    if(line.Split(' ')[0].Length == 1)
+                    if (line.Split(' ')[0].Length == 1)
                     {
                         clean = "0" + line;
                     }
@@ -135,7 +214,7 @@ namespace AnkiEditor
                     currentChapter.SubChapters.Add(new DeepLearningChapter
                     {
                         Name = $"{subCounter.ToString("00")} {clean}"
-                    }) ;
+                    });
                     subCounter++;
                 }
             }
@@ -152,7 +231,7 @@ namespace AnkiEditor
             root.WriteToFile(deckPath);
         }
 
-            private static void FixDeepLearningDeckStructure(string deckPath)
+        private static void FixDeepLearningDeckStructure(string deckPath)
         {
             Deck root = Deck.LoadFromFile(deckPath);
             var chapterConfig = root.GetDeckConfigurationByTitle("DL::Chapter");
@@ -193,11 +272,11 @@ namespace AnkiEditor
                 }
             }
 
-            foreach(var chapter in deepLearningChapters)
+            foreach (var chapter in deepLearningChapters)
             {
                 var ankiChapter = Deck.CreateEmptyDeck(chapter.InferredName, chapterConfig.crowdanki_uuid);
                 root.children.Add(ankiChapter);
-                foreach(var subChapter in chapter.SubChapters)
+                foreach (var subChapter in chapter.SubChapters)
                 {
                     var ankiSubChapter = Deck.CreateEmptyDeck(subChapter.InferredName, chapterConfig.crowdanki_uuid);
                     ankiChapter.children.Add(ankiSubChapter);
@@ -223,13 +302,169 @@ namespace AnkiEditor
                     string number1 = parts[0].Length == 1 ? "0" + parts[0] : parts[0];
                     string number2 = parts[1].Length == 1 ? "0" + parts[1] : parts[1];
                     string number3 = parts[2].Length == 1 ? "0" + parts[2] : parts[2];
-                    return $"{number1}.{number2}.{number3} {title}".Replace(".00","");
+                    return $"{number1}.{number2}.{number3} {title}".Replace(".00", "");
                 }
             }
             public List<DeepLearningChapter> SubChapters { get; set; }
             public override string ToString()
             {
                 return InferredName;
+            }
+        }
+        private static void FixJapaneseFrequencyFuriganaDeckStructure(string deckPath)
+        {
+            //var iknow = File.ReadAllLines("C:\\Users\\juliu\\source\\repos\\IKnowJPDownloader\\IKnowJPDownloader\\IKnowJPDownloader\\bin\\Debug\\net6.0\\iknow.csv").Select(x => x.Split(";"));
+            //Fix deck structure
+            Deck root = Deck.LoadFromFile(deckPath);
+            var vocabList = root.GetAllNotes().Where(n => n.note_model_uuid == "a5a31593-5219-11ed-acf0-0c7a15ee466f");
+            var data = vocabList.Select(v => v.fields[4].ToString()).ToList();
+            var kanjiSentences = vocabList.Select(v => v.fields[10].ToString().Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "")).ToList();
+            var kanaSentences = vocabList.Select(v => v.fields[11].ToString().Replace("<b>", "").Replace("</b>", "").Replace("&nbsp;", "").Replace(" ", "")).ToList();
+            var fullKanji = data.Select(d => d.Split("[")[0]).ToList();
+            var fullFurigana = data.Select(d => d.Split("[")[1].Replace("]", "")).ToList();
+
+
+            List<(string, string)> examples = new List<(string, string)>();
+
+            for (int i = 0; i < kanjiSentences.Count; i++)
+            {
+                var kanji = kanjiSentences[i];
+                var kana = kanaSentences[i];
+
+                var runs = SeparateIntoCharacterRuns(kanji);
+                string furiganaString = "";
+                for (int r = 0; r < runs.Count; r++)
+                {
+                    var run = runs[r];
+                    (char, string)? runNext = r + 1 < runs.Count ? runs[r + 1] : null;
+                    if (run.Item1 == 'H')
+                    {
+                        //Add unaltered hiragana to the string
+                        furiganaString += run.Item2;
+
+                        //If the current block consists of hiragana, remove them from the kana list
+                        kana = kana.ReplaceFirst(run.Item2, "");
+                    }
+                    else if (run.Item1 == 'K')
+                    {
+                        //Add unaltered katakana to the string
+                        furiganaString += run.Item2;
+
+                        //Find corresponding hiragana symbol
+                        var hiraganaRun = new string(run.Item2.Select(c => c.ToHiragana()).ToArray());
+
+                        //If the current block consists of hiragana or katakana, remove them from the kana list
+                        kana = kana.ReplaceFirst(hiraganaRun, "");
+                    }
+                    else if (run.Item1 == 'W')
+                    {
+                        string currentFurigana = "";
+                        //If the current block consists of kanji, find the index of the next block
+                        if (runNext == null)
+                        {
+                            //If there is no next block, the string ends with a kanji and all remaining kana must be added.
+                            currentFurigana = kana;
+                        }
+                        else
+                        {
+                            //If there is a next block, use that
+
+                            //If the next run is katakana, retrieve the corresponding hiragana first
+                            string hiraganaRunNext = "";
+                            if (runNext?.Item1 == 'K')
+                            {
+                                hiraganaRunNext = new string(runNext?.Item2.Select(c => c.ToHiragana()).ToArray());
+                            }
+                            else
+                            {
+                                hiraganaRunNext = runNext?.Item2;
+                            }
+                            var nextIndex = kana.Substring(1).IndexOf(hiraganaRunNext)+1; //Source of probems if the next block (Example: "de" is fully contained in the current kanji block, example: "densha" (densha de ...) - the wrong index is selected.
+                            //var nextIndex = kana.Substring(1).IndexOf(hiraganaRunNext)+1; 
+                            currentFurigana = kana.Substring(0, nextIndex);
+                        }
+
+                        //Add a space before the next kanji block
+                        if (furiganaString != "")
+                        {
+                            furiganaString += " ";
+                        }
+
+                        //Add the kanji block
+                        furiganaString += run.Item2;
+                        //Add the furigana
+                        furiganaString += $"[{currentFurigana}]";
+
+                        //Remove the current furigana from the kana list
+                        kana = kana.ReplaceFirst(currentFurigana, "");
+                    }
+                }
+                examples.Add((kanji, furiganaString));
+            }
+
+            var errors = examples.Where(e => e.Item2.Contains("[]")).ToList();
+
+            var groups = fullKanji.GroupBy(k => k.GetWordType()).OrderBy(g => g.Key.Length).ToList();
+            var compGroups = fullKanji.GroupBy(k => k.GetCompressedWordType()).OrderBy(g => g.Key.Length).ToList();
+
+            foreach (var group in compGroups)
+            {
+                if (group.Key == "W")
+                {
+                    //Add all as furi (do nothing)
+                }
+                else if (group.Key == "H")
+                {
+                    //Add none
+                }
+                else if (group.Key == "K")
+                {
+                    //Add none
+                }
+                else if (group.Key == "WH")
+                {
+                    //Add only first part
+                }
+                else if (group.Key == "HW")
+                {
+                    //Add only last part
+                }
+                else if (group.Key == "WK")
+                {
+                    //Add only first part
+                }
+                else if (group.Key == "KW")
+                {
+                    //Add only last part
+                }
+                else if (group.Key == "KH")
+                {
+                    //Add none
+                }
+                else if (group.Key == "WHW")
+                {
+                    //Add
+                }
+                else if (group.Key == "HWH")
+                {
+                    //Add
+                }
+                else if (group.Key == "WHK")
+                {
+                    //Manually
+                }
+                else if (group.Key == "WHWH")
+                {
+                    //Add
+                }
+                else if (group.Key == "WHWHW")
+                {
+                    //Add
+                }
+                else
+                {
+                    throw new Exception();
+                }
             }
         }
 
@@ -422,5 +657,16 @@ namespace AnkiEditor
         }
     }
 
-
+    public static class StringExtensionMethods
+    {
+        public static string ReplaceFirst(this string text, string search, string replace)
+        {
+            int pos = text.IndexOf(search);
+            if (pos < 0)
+            {
+                return text;
+            }
+            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
+        }
+    }
 }
