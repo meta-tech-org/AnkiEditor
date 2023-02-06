@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 
 namespace OpenRussian.Raw
 {
-    internal class _WordRels
+    internal class _CategoriesWord2
     {
         public int id { get; set; }
+        public int category_id { get; set; }
+        public int position { get; set; }
         public int word_id { get; set; }
-        public int rel_word_id { get; set; }
-        public string relation { get; set; }
+        public string overwrite_tl_en { get; set; }
+        public string overwrite_tl_de { get; set; }
     }
 }

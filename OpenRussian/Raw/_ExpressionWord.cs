@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace OpenRussian.Raw
 {
-    internal class _SentencesWords
+    internal class _ExpressionWord
     {
         public int id { get; set; }
-        public int sentence_id { get; set; }
-        public int word_id { get; set; }
+        public int expression_id { get; set; }
+        public int referenced_word_id { get; set; }
         public int start { get; set; }
         public int length { get; set; }
     }
