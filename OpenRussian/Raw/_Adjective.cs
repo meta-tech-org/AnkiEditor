@@ -16,9 +16,9 @@ namespace OpenRussian.Raw
         public string? short_f { get; set; }
         public string? short_n { get; set; }
         public string? short_pl { get; set; }
-        public int decl_m_id { get; set; }
-        public int decl_f_id { get; set; }
-        public int decl_n_id { get; set; }
-        public int decl_pl_id { get; set; }
+        public int? decl_m_id { get; set; }
+        public int? decl_f_id { get; set; }
+        public int? decl_n_id { get; set; }
+        public int? decl_pl_id { get; set; }
     }
 }
