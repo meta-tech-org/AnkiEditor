@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenRussian.Raw
 {
-    internal class _Verb
+    public class _Verb
     {
         public int word_id { get; set; }
         public string aspect { get; set; }
