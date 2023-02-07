@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenRussian.Raw
 {
-    internal class _Word
+    public class _Word
     {
         public int id { get; set; }
         public int? position { get; set; }
@@ -19,7 +19,7 @@ namespace OpenRussian.Raw
         public string? usage_en { get; set; }
         public string? usage_de { get; set; }
         public string? number_value { get; set; }
-        public string? type { get; set; }
+        public string type { get; set; }
         public string level { get; set; }
     }
 }

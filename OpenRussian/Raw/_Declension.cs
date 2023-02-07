@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenRussian.Raw
 {
-    internal class _Declension
+    public class _Declension
     {
         public int id { get; set; }
         public int word_id { get; set; }
