@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using OpenRussian.Data;
 using OpenRussian.Raw;
 using System;
 using System.Collections.Generic;
@@ -67,6 +68,25 @@ namespace OpenRussian
 
             string pathWordsRels = "words_rels.csv";
             List<_WordRel> wordsRels = GetList<_WordRel>(pathWordsRels);
+
+            var nounCount = words.Where(w => w.type == "noun").ToList();
+
+            //This omits all words that have null declensions because it's an inner join
+            //var allNouns = words
+            //    .Join(nouns, w => w.id, n => n.word_id, (w, n) => new { w, n })
+            //    .Join(declensions, wn => wn.n.decl_sg_id, d_sg => d_sg.id, (wn, d_sg) => new { wn, d_sg })
+            //    .Join(declensions, wnd_sg => wnd_sg.wn.n.decl_pl_id, d_pl => d_pl.id, (wnd_sg, d_pl) => new Noun(wnd_sg.wn.w, wnd_sg.wn.n, wnd_sg.d_sg, d_pl))
+            //    .ToList();
+            
+
+            //Thanks, ChatGPT
+            var allNouns = words
+                .Join(nouns, w => w.id, n => n.word_id, (w, n) => new { w, n })
+                .GroupJoin(declensions, wn => wn.n.decl_sg_id, d_sg => d_sg.id, (wn, d_sg) => new { wn, d_sg = d_sg.DefaultIfEmpty() })
+                .SelectMany(wnd_sg => wnd_sg.d_sg.Select(d_sg => new { wnd_sg.wn, d_sg }))
+                .GroupJoin(declensions, wnd_sg => wnd_sg.wn.n.decl_pl_id, d_pl => d_pl.id, (wnd_sg, d_pl) => new { wnd_sg.wn, wnd_sg.d_sg, d_pl = d_pl.DefaultIfEmpty() })
+                .SelectMany(wnd_sg_pl => wnd_sg_pl.d_pl.Select(d_pl => new Noun(wnd_sg_pl.wn.w, wnd_sg_pl.wn.n, wnd_sg_pl.d_sg, d_pl)))
+                .ToList();
         }
 
         private static List<T> GetList<T>(string path)
