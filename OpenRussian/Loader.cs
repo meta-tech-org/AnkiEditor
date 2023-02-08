@@ -96,10 +96,14 @@ namespace OpenRussian
 
             var allAdjectives = words
                 .Join(adjectives, w => w.id, a => a.word_id, (w, a) => new { w, a })
-                .Join(declensions, wa => wa.a.decl_m_id, m => m.id, (wa, m) => new { wa, m })
-                .Join(declensions, wam => wam.wa.a.decl_f_id, f => f.id, (wam, f) => new {wam, f })
-                .Join(declensions, wamf => wamf.wam.wa.a.decl_n_id, n => n.id, (wamf, n) => new { wamf, n })
-                .Join(declensions, wamfn => wamfn.wamf.wam.wa.a.decl_pl_id, pl => pl.id, (wamfn, pl) => new Adjective(wamfn.wamf.wam.wa.w, wamfn.wamf.wam.wa.a, wamfn.wamf.wam.m, wamfn.wamf.f, wamfn.n, pl))
+                .GroupJoin(declensions, wa => wa.a.decl_m_id, m => m.id, (wa, m) => new { wa, m = m.DefaultIfEmpty() })
+                .SelectMany(wam => wam.m.Select(m => new { wam.wa, m }))
+                .GroupJoin(declensions, wam => wam.wa.a.decl_f_id, f => f.id, (wam, f) => new { wam, f = f.DefaultIfEmpty() })
+                .SelectMany(wamf => wamf.f.Select(f => new { wamf.wam, f }))
+                .GroupJoin(declensions, wamf => wamf.wam.wa.a.decl_n_id, n => n.id, (wamf, n) => new { wamf, n = n.DefaultIfEmpty() })
+                .SelectMany(wamfn => wamfn.n.Select(n => new { wamfn.wamf, n }))
+                .GroupJoin(declensions, wamfn => wamfn.wamf.wam.wa.a.decl_pl_id, pl => pl.id, (wamfn, pl) => new { wamfn, pl = pl.DefaultIfEmpty() })
+                .SelectMany(wamfnpl => wamfnpl.pl.Select(pl => new Adjective(wamfnpl.wamfn.wamf.wam.wa.w, wamfnpl.wamfn.wamf.wam.wa.a, wamfnpl.wamfn.wamf.wam.m, wamfnpl.wamfn.wamf.f, wamfnpl.wamfn.n, pl)))
                 .ToList();
         }
 
