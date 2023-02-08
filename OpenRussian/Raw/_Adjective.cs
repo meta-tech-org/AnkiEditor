@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace OpenRussian.Raw
 {
-    internal class _Adjective
+    public class _Adjective
     {
         public int word_id { get; set; }
-        public int? incomparable { get; set; }
+        public bool? incomparable { get; set; }
         public string? comparative { get; set; }
         public string? superlative { get; set; }
         public string? short_m { get; set; }

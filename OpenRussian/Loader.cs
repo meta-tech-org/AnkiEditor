@@ -93,6 +93,14 @@ namespace OpenRussian
                 .Join(verbs, w => w.id, v => v.word_id, (w, v) => new { w, v })
                 .Join(conjugations, wv => wv.v.presfut_conj_id, conj => conj.id, (wv, conj) => new Verb(wv.w, wv.v, conj))
                 .ToList();
+
+            var allAdjectives = words
+                .Join(adjectives, w => w.id, a => a.word_id, (w, a) => new { w, a })
+                .Join(declensions, wa => wa.a.decl_m_id, m => m.id, (wa, m) => new { wa, m })
+                .Join(declensions, wam => wam.wa.a.decl_f_id, f => f.id, (wam, f) => new {wam, f })
+                .Join(declensions, wamf => wamf.wam.wa.a.decl_n_id, n => n.id, (wamf, n) => new { wamf, n })
+                .Join(declensions, wamfn => wamfn.wamf.wam.wa.a.decl_pl_id, pl => pl.id, (wamfn, pl) => new Adjective(wamfn.wamf.wam.wa.w, wamfn.wamf.wam.wa.a, wamfn.wamf.wam.m, wamfn.wamf.f, wamfn.n, pl))
+                .ToList();
         }
 
         private static List<T> GetList<T>(string path)
