@@ -1,6 +1,5 @@
 ﻿using CrowdAnkiSchema.Model;
 using Newtonsoft.Json;
-using OpenRussian;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
