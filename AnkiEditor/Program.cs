@@ -1,5 +1,6 @@
 ﻿using CrowdAnkiSchema.Model;
 using Newtonsoft.Json;
+using OpenRussian;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
@@ -16,11 +17,16 @@ namespace AnkiEditor
         static void Main(string[] args)
         {
             //AIDBMBSAddExcerciseSubdecks(@"C:\Users\juliu\source\repos\Anki Exports\Architecture_and_Implementation_of_Database_Management_Systems\deck.json");
-            FixJapaneseFrequencyFuriganaDeckStructure(@"C:\Users\juliu\source\Anki Exports\Japanese_Frequency_6000\deck.json");
+            //FixJapaneseFrequencyFuriganaDeckStructure(@"C:\Users\juliu\source\Anki Exports\Japanese_Frequency_6000\deck.json");
             //FixRussianDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Russisch_-_Olga_Schöne_-_Ein_guter_Anfang\deck.json");
             //FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
             //FixDeepLearningDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Deep_Learning_(Goodfellow,_Bengio,_Courville)\deck.json");
             //FixDIPDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Digital_Image_Processing_(Gonzalez,_Woods)\deck.json");
+            CreateOpenRussianDeck("");
+        }
+
+        private static void CreateOpenRussianDeck(string deckPath)
+        {
         }
 
         private static bool IsHiragana(this char c)
