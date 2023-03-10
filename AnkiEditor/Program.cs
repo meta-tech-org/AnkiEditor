@@ -21,11 +21,66 @@ namespace AnkiEditor
             //FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
             //FixDeepLearningDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Deep_Learning_(Goodfellow,_Bengio,_Courville)\deck.json");
             //FixDIPDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Digital_Image_Processing_(Gonzalez,_Woods)\deck.json");
-            CreateOpenRussianDeck("");
+            CreateOpenRussianDeck(@"C:\Users\juliu\source\Anki Exports\OpenRussian\deck.json", @"C:\Users\juliu\source\repos\OpenRussianConverter\OpenRussianExporter\output.json");
         }
 
-        private static void CreateOpenRussianDeck(string deckPath)
+        private static void CreateOpenRussianDeck(string deckPath, string dataPath)
         {
+            Deck root = Deck.LoadFromFile(deckPath);
+            OpenRussianWord[] words = JsonConvert.DeserializeObject<OpenRussianWord[]>(File.ReadAllText(dataPath));
+            var noteType = root.note_models.FirstOrDefault(nm => nm.crowdanki_uuid == "07aac7c1-a960-11ed-8dac-0c7a15ee466b");
+            foreach (var level in root.children)
+            {
+                var levelName = level.name;
+                var relatedData = words.Where(w => w.Level == levelName);
+                level.notes.Clear();
+                foreach (var wordData in relatedData)
+                {
+                    List<string> fieldValues = new List<string>()
+                    {
+                        wordData.Index.ToString(),
+                        wordData.Level,
+                        wordData.RussianAccented,
+                        wordData.English,
+                        wordData.RussianBare,
+                        wordData.Audio ?? "",
+                        wordData.DerivedFrom??"",
+                        wordData.UsageExample??"",
+                        wordData.RelatedTo??"",
+                        wordData.SentenceExamplesRussian??"",
+                        wordData.SentenceExamplesAudio??"",
+                        wordData.SentenceExamplesEnglish??"",
+                        wordData.IsNoun?"True":"",
+                        wordData.IsAnimate?.ToString()??"",
+                        wordData.Gender??"",
+                        wordData.IsAdjective?"True":"",
+                        wordData.Comparative??"",
+                        wordData.Superlative??"",
+                        wordData.IsVerb?"True":"",
+                        wordData.Partner??"",
+                        wordData.Aspect??"",
+                    };
+                    List<string> tags = new List<string>();
+                    if (wordData.IsAdjective)
+                    {
+                        tags.Add("OpenRussian::Adjective");
+                    }
+                    if (wordData.IsNoun)
+                    {
+                        tags.Add("OpenRussian::Noun");
+                    }
+                    if (wordData.IsVerb)
+                    {
+                        tags.Add("OpenRussian::Verb");
+                    }
+                    if (!wordData.IsVerb && !wordData.IsNoun && !wordData.IsAdjective)
+                    {
+                        tags.Add("OpenRussian::Other");
+                    }
+                    level.AddNote("07aac7c1-a960-11ed-8dac-0c7a15ee466b", fieldValues, tags);
+                }
+            }
+            root.WriteToFile(deckPath);
         }
 
         private static bool IsHiragana(this char c)
@@ -338,7 +393,7 @@ namespace AnkiEditor
             //Fix deck structure
             Deck root = Deck.LoadFromFile(deckPath);
             var vocabDeck = root.children.First(c => c.name == "Words").children.First(c => c.name == "02 Kanji");
-            foreach(var note in vocabDeck.notes)
+            foreach (var note in vocabDeck.notes)
             {
                 var word = note.fields[4];
                 var kanji = word.Split("[")[0];
@@ -554,5 +609,29 @@ namespace AnkiEditor
             }
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
+    }
+    public class OpenRussianWord
+    {
+        public int Index { get; set; }
+        public string Level { get; set; }
+        public string RussianAccented { get; set; }
+        public string English { get; set; }
+        public string RussianBare { get; set; }
+        public string? Audio { get; set; }
+        public string? DerivedFrom { get; set; }
+        public string? UsageExample { get; set; }
+        public string? RelatedTo { get; set; }
+        public string? SentenceExamplesRussian { get; set; }
+        public string? SentenceExamplesAudio { get; set; }
+        public string? SentenceExamplesEnglish { get; set; }
+        public bool IsNoun { get; set; }
+        public bool? IsAnimate { get; set; }
+        public string? Gender { get; set; }
+        public bool IsAdjective { get; set; }
+        public string? Comparative { get; set; }
+        public string? Superlative { get; set; }
+        public bool IsVerb { get; set; }
+        public string? Partner { get; set; }
+        public string? Aspect { get; set; }
     }
 }
