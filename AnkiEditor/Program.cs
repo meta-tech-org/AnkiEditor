@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 
 namespace AnkiEditor
@@ -21,7 +22,113 @@ namespace AnkiEditor
             //FixJapaneseFrequencyDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Japanese_Frequency_6000");
             //FixDeepLearningDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Deep_Learning_(Goodfellow,_Bengio,_Courville)\deck.json");
             //FixDIPDeckStructure(@"C:\Users\juliu\source\repos\Anki Exports\Digital_Image_Processing_(Gonzalez,_Woods)\deck.json");
-            CreateOpenRussianDeck(@"C:\Users\juliu\source\Anki Exports\OpenRussian\deck.json", @"C:\Users\juliu\source\repos\OpenRussianConverter\OpenRussianExporter\output.json");
+            //CreateOpenRussianDeck(@"C:\Users\juliu\source\Anki Exports\OpenRussian\deck.json", @"C:\Users\juliu\source\repos\OpenRussianConverter\OpenRussianExporter\output.json");
+            CreateSpanishDeck(@"C:\Users\juliu\source\Anki Exports\UNIVERSO.ele\deck.json", @"C:\Users\juliu\source\repos\meta-tech-org\AnkiEditor\AnkiEditor\SpanischFormatted.csv");
+        }
+
+        private static void CreateSpanishDeck(string deckPath, string dataPath)
+        {
+            string[] subdeckNames = new string[]
+            {
+                "Intro",
+                "A",
+                "B",
+                "C",
+                "Proyecto",
+                "Mi gramática",
+                "Mi léxico",
+                "Cultura",
+                "AB"
+            };
+            Deck root = Deck.LoadFromFile(deckPath);
+            if (root.children.Count == 0)
+            {
+                //Create decks
+                var a1Deck = Deck.CreateEmptyDeck("A1", root.deck_config_uuid);
+                for (int unidad = 1; unidad <= 7; unidad++)
+                {
+                    var unidadDeck = Deck.CreateEmptyDeck($"Unidad {unidad.ToString("00")}", root.deck_config_uuid);
+                    for (int subdeck = 1; subdeck < subdeckNames.Length + 1; subdeck++)
+                    {
+                        if(unidad == 1 && new int[] { 5, 6, 7, 8 }.Contains(subdeck))
+                        {
+                            continue;
+                        }
+                        var currentName = $"{subdeck.ToString("00")} {subdeckNames[subdeck - 1]}";
+                        unidadDeck.children.Add(Deck.CreateEmptyDeck(currentName, root.deck_config_uuid));
+                    }
+                    a1Deck.children.Add(unidadDeck);
+                }
+                root.children.Add(a1Deck);
+            }
+
+            var check = File.ReadAllLines(dataPath).Select(d => d.Split(";")).Where(d => d.Length != 7).ToList();
+
+            var data = File.ReadAllLines(dataPath).Select(d => d.Split(";")).Select(d =>
+            new SpanishWord
+            {
+                Lesson = d[0],
+                Spanish = d[1],
+                German = d[2],
+                Wordtype = d[3],
+                Gender = d[4],
+                Number = d[5],
+                LA = d[6],
+            }).ToList();
+            List<SpanishWord> filteredWords = new List<SpanishWord>();
+            List<SpanishWord> filteredOutWords = new List<SpanishWord>();
+            //Filter out female extra words
+            for(int i = 0; i < data.Count-1; i++)
+            {
+                var word = data[i];
+                var nextWord = data[i+1];
+
+                if (word.Spanish.Last() == 'o' && word.Spanish.Substring(0, word.Spanish.Length-1)+"a" == nextWord.Spanish)
+                {
+                    word.Spanish += "/-a";
+                    word.Gender += "/"+nextWord.Gender;
+                    filteredWords.Add(word);
+                    filteredOutWords.Add(nextWord);
+                    i++;
+                }
+                else
+                {
+                    filteredWords.Add(word);
+                }
+            }
+
+            data = filteredWords;
+
+            var noteModelUUID = root.note_models.First().crowdanki_uuid;
+            foreach(var unidad in root.children.First().children)
+            {
+                foreach(var subdeck in unidad.children)
+                {
+                    subdeck.notes.Clear();
+                    var wordTitle = (unidad.name.Replace("Unidad 0","")+subdeck.name.Replace(subdeck.name.Split(" ")[0],"")).Replace(" Intro", "");
+                    var words = data.Where(w => w.Lesson == wordTitle).ToList();
+                    if(words.Count == 0)
+                    {
+                        throw new Exception("WTF");
+                    }
+                    foreach(var word in words)
+                    {
+                        List<string> fieldValues = new List<string>()
+                        {
+                            word.Spanish,
+                            word.German,
+                            word.Wordtype,
+                            word.Gender,
+                            word.Number,
+                            word.LA,
+                        };
+                        List<string> tags = new List<string>();
+
+                        subdeck.AddNote(noteModelUUID, fieldValues, tags);
+                    }
+                }
+            }
+            root.WriteToFile(deckPath);
         }
 
         private static void CreateOpenRussianDeck(string deckPath, string dataPath)
@@ -633,5 +740,15 @@ namespace AnkiEditor
         public bool IsVerb { get; set; }
         public string? Partner { get; set; }
         public string? Aspect { get; set; }
+    }
+    public class SpanishWord
+    {
+        public string? Lesson { get; set; }
+        public string? Spanish { get; set; }
+        public string? German { get; set; }
+        public string? Wordtype { get; set; }
+        public string? Gender { get; set; }
+        public string? Number { get; set; }
+        public string? LA { get; set; }
     }
 }
