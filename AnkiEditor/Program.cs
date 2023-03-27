@@ -117,6 +117,7 @@ namespace AnkiEditor
                         {
                             word.Spanish,
                             word.German,
+                            "", //audio
                             word.Wordtype,
                             word.Gender,
                             word.Number,
